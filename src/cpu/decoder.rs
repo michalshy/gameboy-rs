@@ -1,13 +1,22 @@
-static MAIN_TABLE: [OpcodeEntry; 256] = [
+static LOOKUP: [OpcodeEntry; 256] = [
+    // 0x00
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
-    OpcodeEntry { opcode: Opcode::LdR16V16(R16::BC), length: 3, cycles: 12 },
-    OpcodeEntry { opcode: Opcode::LdPtrR16R8(R16::BC, R8::A), length: 1, cycles: 8 },
+    OpcodeEntry { opcode: Opcode::LdR16N16(R16::BC), length: 3, cycles: 12 },
+    OpcodeEntry { opcode: Opcode::LdPtrR16A(R16::BC), length: 1, cycles: 8 },
     OpcodeEntry { opcode: Opcode::IncR16(R16::BC), length: 1, cycles: 8 },
     OpcodeEntry { opcode: Opcode::IncR8(R8::B), length: 1, cycles: 4 },
     OpcodeEntry { opcode: Opcode::DecR8(R8::B), length: 1, cycles: 4 },
     OpcodeEntry { opcode: Opcode::LdR8V8(R8::B), length: 2, cycles: 8 },
     OpcodeEntry { opcode: Opcode::RlcA, length: 1, cycles: 4 },
-    OpcodeEntry { opcode: Opcode::LdPtrV16R16(R16::SP), length: 3, cycles: 20 },
+    OpcodeEntry { opcode: Opcode::LdPtrN16SP, length: 3, cycles: 20 },
+    OpcodeEntry { opcode: Opcode::AddHLR16(R16::BC), length: 1, cycles: 8 },
+    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
+    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
+    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
+    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
+    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
+    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
+    // 0x0f
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
@@ -24,13 +33,7 @@ static MAIN_TABLE: [OpcodeEntry; 256] = [
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
-    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
-    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
-    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
-    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
-    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
-    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
-    OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
+    // 0x1f
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },
@@ -273,84 +276,100 @@ pub enum CC {
 }
 
 pub enum Opcode {
-    AdcR8R8(R8, R8),
-    AdcR8V8(R8),
-    AddR8R8(R8, R8),
-    AddR8V8(R8),
-    AddR16V16(R16),
-    AddR16R16(R16, R16),
-    AddSPE8,
-    AndR8R8(R8, R8),
-    AndR8V8(R8),
-    Bit(R8),
-    CallV16,
-    CallCCV16(CC),
-    Ccf,
-    CpR8R8(R8, R8),
-    CpR8PtrR16(R8, R16),
-    CpR8V8(R8),
-    Cpl,
-    Daa,
-    DecR8(R8),
-    DecPtrR16(R16),
-    DecR16(R16),
-    Di,
-    Ei,
-    Halt,
-    IncR8(R8),
-    IncPtrR16(R16),
-    IncR16(R16),
-    JpV16,
-    JpCCV16(CC),
-    JpR16(R16),
-    JrV16,
-    JrCCV16,
+    // Load
     LdR8R8(R8, R8), // load value in right reg to left reg
     LdR8V8(R8), // load value to reg
-    LdR16V16(R16), // load value in right reg to left reg
-    LdPtrR16R8(R16, R8),
-    LdPtrV16R8(R8),
-    LdHPtrV16R8(R8), // load a to v16 but on page 0xff00 + v16
-    LdHPtrR8R8(R8, R8), // loads a to byte pointer by 0xff00 + c
-    LdR8PtrR16(R8, R16), // loads value from address reg into A
-    LdR8PtrV16(R8), // loads value from address val into A
-    LdHR8PtrV16(R8), // loads value from address 0xff00 + val into A
-    LdHR8PtrR8(R8, R8),
-    LdPtrHLiR8(R8), // increment
-    LdPtrHLdR8(R8), // decrement
-    LdR8PtrHLd(R8),
-    LdR8PtrHLi(R8),
-    LdPtrV16R16(R16),
-    LdHLSPe8, // add signed e8 to SP and result in HL
-    LdR16R16(R16, R16),
-    Nop,
-    OrR8R8(R8,R8),
-    OrR8V8(R8),
-    PopR16(R16),
-    PushR16(R16),
+    LdR16N16(R16), // load value in right reg to left reg
+    LdPtrR16A(R16),
+    LdPtrN16A,
+    LdHPtrN16A, // load a to N16 but on page 0xff00 + N16
+    LdHPtrCA, // loads a to byte pointer by 0xff00 + c
+    LdAPtrR16(R16), // loads value from address reg into A
+    LdAPtrN16, // loads value from address val into A
+    LdHAPtrN16, // loads value from address 0xff00 + val into A
+    LdHAPtrC,
+    LdPtrHLIncA, // increment
+    LdPtrHLDecA, // decrement
+    LdAPtrHLDec,
+    LdAPtrHLInc,
+    // 8-bit arithmetic
+    AdcAR8(R8),
+    AdcAV8,
+    AddAR8(R8),
+    AddAV8,
+    CpAR8(R8),
+    CpAV8,
+    DecR8(R8),
+    IncR8(R8),
+    SbcAR8(R8),
+    SbcAV8,
+    SubAR8(R8),
+    SubAV8,
+    // 16-bit arithmetic
+    AddHLR16(R16),
+    DecR16(R16),
+    IncR16(R16),
+    // Bitwise logic
+    AndAR8(R8),
+    AndAV8,
+    Cpl,
+    OrAR8(R8),
+    OrAV8,
+    XorAR8(R8),
+    XorAV8,
+    // Bit flag
+    Bit(R8),
+    Set(R8),
     Res(R8),
-    Ret,
-    RetCC(CC),
-    Reti,
+    // Bit shift
     RlR8(R8),
+    RlA,
     RlcR8(R8),
     RlcA,
     RrR8(R8),
+    RrA,
     RrcR8(R8),
-    RstV16,
-    SbcR8R8(R8, R8),
-    SbcR8V8(R8),
-    Scf,
-    Set(R8),
+    RrcA,
     SlaR8(R8),
     SraR8(R8),
     SrlR8(R8),
-    Stop,
-    SubR8R8(R8, R8),
-    SubR8V8(R8),
     SwapR8(R8),
-    XorR8(R8),
-    XorR8V8(R8)
+    // Jump / coroutine
+    CallN16,
+    CallCCN16(CC),
+    JpHL,
+    JpN16,
+    JpCCN16(CC),
+    JrE8,
+    JrCCE8(CC),
+    Ret,
+    RetCC(CC),
+    Reti,
+    Rst(u8),
+    // Carry flag
+    Scf,
+    Ccf,
+    // Stack manipulation
+    AddHLSP,
+    AddSPe8,
+    LdHLSPe8, // add signed e8 to SP and result in HL
+    DecSP,
+    IncSP,
+    LdSPN16,
+    LdPtrN16SP, 
+    LdSPHL,
+    PopAF,
+    PopR16(R16),
+    PushAF,
+    PushR16(R16),
+    // Interrupts
+    Di,
+    Ei,
+    Halt,
+    // Misc
+    Daa,
+    Nop,
+    Stop,
 }
 
 pub struct OpcodeEntry {
@@ -360,5 +379,5 @@ pub struct OpcodeEntry {
 }
 
 pub fn decode(byte: u8) -> &'static OpcodeEntry {
-    &MAIN_TABLE[byte as usize]
+    &LOOKUP[byte as usize]
 }
