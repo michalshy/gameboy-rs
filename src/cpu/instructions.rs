@@ -1,5 +1,8 @@
 use crate::cpu::decoder::OpcodeEntry;
+use crate::cpu::Cpu;
 
-pub fn execute_instruction(entry: &OpcodeEntry) {
-    
+impl Cpu {
+    pub fn execute_instruction(&mut self, entry: &OpcodeEntry) {
+        
+    }
 }

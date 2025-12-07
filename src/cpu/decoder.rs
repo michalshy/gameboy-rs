@@ -1,3 +1,5 @@
+use crate::cpu::Cpu;
+
 static LOOKUP: [OpcodeEntry; 256] = [
     // 0x00–0x1F
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },                     // 0x00

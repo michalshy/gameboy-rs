@@ -5,7 +5,6 @@ pub mod instructions;
 
 use registers::Registers;
 use decoder::decode;
-use instructions::execute_instruction;
 
 pub struct Cpu {
     registers: Registers
@@ -17,9 +16,10 @@ impl Cpu {
     }
 
     pub fn step(&mut self) {
-        // Fetch
-        let dummy_byte: u8 = 0x00; 
-        // Execute
-        execute_instruction(decode(dummy_byte));
+        let opcode_byte = 0x00; // (temporary placeholder)
+        
+        let entry = decode(opcode_byte);
+
+        self.execute_instruction(entry);
     }
 }
