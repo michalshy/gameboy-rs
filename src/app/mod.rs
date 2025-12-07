@@ -1,14 +1,19 @@
 pub mod tui;
 
 use tui::Tui;
+use crate::emulator::Emulator;
 
 pub fn run() {
 
     let mut tui = Tui::new();
+    let mut emulator = Emulator::new();
 
     loop {
-        tui.draw();
+        // logic
+        emulator.tick();
 
+        // draw
+        tui.draw();
         if !tui.poll()
         {
             break;

@@ -6,6 +6,8 @@ pub mod instructions;
 use registers::Registers;
 use decoder::decode;
 
+use crate::mmu::Mmu;
+
 pub struct Cpu {
     registers: Registers
 }
@@ -15,11 +17,13 @@ impl Cpu {
         Self { registers: Registers::new() }
     }
 
-    pub fn step(&mut self) {
+    pub fn step(&mut self, mmu: &Mmu) -> u32 {
         let opcode_byte = 0x00; // (temporary placeholder)
         
         let entry = decode(opcode_byte);
 
         self.execute_instruction(entry);
+    
+        entry.cycles as u32
     }
 }

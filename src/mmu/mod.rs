@@ -10,4 +10,8 @@ impl Mmu {
     pub fn new() -> Self {
         Self {  }
     }
+
+    pub fn read_bye() -> u8 {
+        0x00
+    }
 }

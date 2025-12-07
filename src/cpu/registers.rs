@@ -1,5 +1,5 @@
 #[derive(Clone, Copy)]
-pub enum Flags {
+enum Flags {
     Z = 0b1000_0000,
     N = 0b0100_0000,
     H = 0b0010_0000,
@@ -11,7 +11,6 @@ impl Flags {
         self as u8
     }
 }
-
 
 pub struct Registers {
     a: u8,

@@ -713,11 +713,64 @@ pub enum Opcode {
 }
 
 pub struct OpcodeEntry {
-    opcode: Opcode,
-    length: u8,
-    cycles: u8,
+    pub opcode: Opcode,
+    pub length: u8,
+    pub cycles: u8,
 }
 
 pub fn decode(byte: u8) -> &'static OpcodeEntry {
     &LOOKUP[byte as usize]
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn decode_nop_entry() {
+        let entry = decode(0x00);
+        assert!(matches!(entry, &OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 }));
+    }
+
+    #[test]
+    fn decode_prefix_and_cb_table_entries() {
+        // 0xCB in the main table is the prefix placeholder
+        let pref = decode(0xCB);
+        assert!(matches!(pref, &OpcodeEntry { opcode: Opcode::Prefix, length: 1, cycles: 4 }));
+
+        // Check a few CB table entries directly
+        // CB07 -> RLC A
+        assert!(matches!(&CB_LOOKUP[0x07], &OpcodeEntry { opcode: Opcode::RlcR8(R8::A), length: 2, cycles: 8 }));
+
+        // CB06 -> RLC (HL) (longer cycles)
+        assert!(matches!(&CB_LOOKUP[0x06], &OpcodeEntry { opcode: Opcode::RlcR8(R8::HLIndirect), length: 2, cycles: 16 }));
+
+        // CB47 -> BIT 0, A
+        assert!(matches!(&CB_LOOKUP[0x47], &OpcodeEntry { opcode: Opcode::Bit(0, R8::A), length: 2, cycles: 8 }));
+    }
+
+    #[test]
+    fn decode_loads_and_halt() {
+        // LD (HL),A+ related checks
+        let e2 = decode(0x22); // LD (HL+), A
+        assert!(matches!(e2, &OpcodeEntry { opcode: Opcode::LdPtrHLIncA, length: 1, cycles: 8 }));
+
+        // HALT opcode at 0x76
+        let halt = decode(0x76);
+        assert!(matches!(halt, &OpcodeEntry { opcode: Opcode::Halt, length: 1, cycles: 4 }));
+    }
+
+    #[test]
+    fn decode_alu_and_misc() {
+        // 0x86 is ADD A, (HL) in the table
+        let add_hl = decode(0x86);
+        assert!(matches!(add_hl, &OpcodeEntry { opcode: Opcode::AddAR8(R8::HLIndirect), length: 1, cycles: 8 }));
+
+        // 0xC3 is unconditional JP nn
+        let jp = decode(0xC3);
+        assert!(matches!(jp, &OpcodeEntry { opcode: Opcode::JpN16, length: 3, cycles: 16 }));
+
+        // 0xE2 is the LD (0xFF00+C), A variant in the table
+        let e2 = decode(0xE2);
+        assert!(matches!(e2, &OpcodeEntry { opcode: Opcode::LdHAPtrC, length: 1, cycles: 8 }));
+    }
 }

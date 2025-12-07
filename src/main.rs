@@ -7,8 +7,9 @@ mod joypad;
 mod serial;
 mod apu;
 mod debug;
-mod ui;
+mod app;
+mod emulator;
 
 fn main() {
-    ui::run();
+    app::run();
 }
