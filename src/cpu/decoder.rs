@@ -53,7 +53,7 @@ static LOOKUP: [OpcodeEntry; 256] = [
     OpcodeEntry { opcode: Opcode::Cpl, length: 1, cycles: 4 },                   // 0x2F
 
     OpcodeEntry { opcode: Opcode::JrCCE8(CC::NC), length: 2, cycles: 8 },        // 0x30 JR NC,r8 (not taken: 8)
-    OpcodeEntry { opcode: Opcode::LdR16N16(R16::SP), length: 3, cycles: 12 },    // 0x31 LD SP,nn
+    OpcodeEntry { opcode: Opcode::LdSPN16, length: 3, cycles: 12 },              // 0x31 LD SP,nn
     OpcodeEntry { opcode: Opcode::LdPtrHLDecA, length: 1, cycles: 8 },           // 0x32 LD (HL-), A
     OpcodeEntry { opcode: Opcode::IncSP, length: 1, cycles: 8 },                 // 0x33 INC SP
     OpcodeEntry { opcode: Opcode::IncR8(R8::HLIndirect), length: 1, cycles: 12 },// 0x34 INC (HL)
@@ -225,7 +225,7 @@ static LOOKUP: [OpcodeEntry; 256] = [
     OpcodeEntry { opcode: Opcode::JpN16, length: 3, cycles: 16 },                // 0xC3 JP nn
     OpcodeEntry { opcode: Opcode::CallCCN16(CC::NZ), length: 3, cycles: 12 },    // 0xC4 CALL NZ,nn (not taken: 12)
     OpcodeEntry { opcode: Opcode::PushR16(R16::BC), length: 1, cycles: 16 },     // 0xC5 PUSH BC
-    OpcodeEntry { opcode: Opcode::AddSPe8, length: 2, cycles: 16 },              // 0xC6 ADD A,n8  (note: 0xC6 is ADD A,n8 - adjust if naming different)
+    OpcodeEntry { opcode: Opcode::AddAN8, length: 2, cycles: 16 },               // 0xC6 ADD A,n8  (note: 0xC6 is ADD A,n8 - adjust if naming different)
     OpcodeEntry { opcode: Opcode::Rst(0x00), length: 1, cycles: 16 },            // 0xC7 RST 00h
 
     OpcodeEntry { opcode: Opcode::RetCC(CC::Z), length: 1, cycles: 8 },          // 0xC8 RET Z (not taken: 8)
@@ -284,7 +284,7 @@ static LOOKUP: [OpcodeEntry; 256] = [
     OpcodeEntry { opcode: Opcode::Rst(0x30), length: 1, cycles: 16 },       // 0xF7 RST 30h
 
     OpcodeEntry { opcode: Opcode::LdHLSPe8, length: 2, cycles: 12 },        
-    OpcodeEntry { opcode: Opcode::LdSPHL, length: 1, cycles: 8 },      // 0xF9 LD HL? (JP HL) - confirm naming
+    OpcodeEntry { opcode: Opcode::LdSPHL, length: 1, cycles: 8 },      
     OpcodeEntry { opcode: Opcode::LdAPtrN16, length: 3, cycles: 16 },       // 0xFA LD A,(nn)
     OpcodeEntry { opcode: Opcode::Ei, length: 1, cycles: 4 },               // 0xFB EI
     OpcodeEntry { opcode: Opcode::Undefined, length: 1, cycles: 4 },       // 0xFC unused
@@ -615,7 +615,6 @@ pub enum Opcode {
     LdR16N16(R16), // load value in right reg to left reg
     LdPtrR16A(R16),
     LdPtrN16A,
-    LdHPtrN16A, // load a to N16 but on page 0xff00 + N16
     LdHPtrCA, // loads a to byte pointer by 0xff00 + c
     LdAPtrR16(R16), // loads value from address reg into A
     LdAPtrN16, // loads value from address val into A
