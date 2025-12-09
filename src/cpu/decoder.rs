@@ -263,7 +263,7 @@ static LOOKUP: [OpcodeEntry; 256] = [
     OpcodeEntry { opcode: Opcode::LdHAPtrC, length: 1, cycles: 8 },            // 0xE2 LD (0xFF00+C), A
     OpcodeEntry { opcode: Opcode::Undefined, length: 1, cycles: 4 },          // 0xE3 unused
     OpcodeEntry { opcode: Opcode::Undefined, length: 1, cycles: 4 },          // 0xE4 unused
-    OpcodeEntry { opcode: Opcode::PushR16(R16::HL), length: 1, cycles: 16 },            // 0xE5 PUSH HL? (note: 0xE5 is PUSH HL in GB; adapt if your enum uses PushAF etc.)
+    OpcodeEntry { opcode: Opcode::PushR16(R16::HL), length: 1, cycles: 16 },            
     OpcodeEntry { opcode: Opcode::AndAN8, length: 2, cycles: 8 },             // 0xE6 AND n
     OpcodeEntry { opcode: Opcode::Rst(0x20), length: 1, cycles: 16 },         // 0xE7 RST 20h
 

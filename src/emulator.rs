@@ -1,5 +1,7 @@
-use crate::cpu::{self, Cpu};
-use crate::mmu::Mmu;
+use crate::cpu::Cpu;
+use crate::mmu::cartridge::Cartridge;
+use crate::mmu::memory::Memory;
+use crate::mmu::{Mmu, cartridge, memory};
 use crate::ppu::Ppu;
 use crate::timer::Timer;
 use crate::interrupts::InterruptController;
@@ -10,32 +12,32 @@ use crate::apu::Apu;
 pub struct Emulator {
     cpu: Cpu,
     mmu: Mmu,
-    ppu: Ppu,
-    timer: Timer,
-    interrupt_controller: InterruptController,
-    joypad: Joypad,
-    serial: SerialPort,
-    apu: Apu,
 }
 
 impl Emulator {
     pub fn new() -> Self {
+            let memory = Memory::new();
+            let cartridge = Cartridge::empty();
+
+            let cpu = Cpu::new(); 
+            let ppu = Ppu::new();
+            let timer =Timer::new();
+            let interrupt_controller = InterruptController::new(); 
+            let joypad = Joypad::new();
+            let serial = SerialPort::new(); 
+            let apu = Apu::new();
+            let mmu = Mmu::new(memory, cartridge, timer, ppu, joypad, interrupt_controller, serial, apu);
+
         return Self { 
-            cpu: Cpu::new(), 
-            mmu: Mmu::new(), 
-            ppu: Ppu::new(), 
-            timer: Timer::new(), 
-            interrupt_controller: InterruptController::new(), 
-            joypad: Joypad::new(), 
-            serial: SerialPort::new(), 
-            apu: Apu::new() 
+            cpu,
+            mmu
         }
     }
 
     pub fn tick(&mut self) -> u32 {
-        let cycles = self.cpu.step(&self.mmu);
+        let cycles = self.cpu.step(&mut self.mmu);
 
-        // Todo: Tick other systems
+        self.mmu.tick(cycles);
 
         cycles
     }
