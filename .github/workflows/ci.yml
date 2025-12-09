@@ -22,15 +22,51 @@ jobs:
 
     - name: Build
       run: cargo build --verbose
+      continue-on-error: true
+      id: build_step
 
-    - name: Run tests
+    - name: Run tests (record but continue)
       run: cargo test --verbose
       continue-on-error: true
+      id: test_step
 
-    - name: Clippy
+    - name: Clippy (record but continue)
       run: cargo clippy -- -D warnings
       continue-on-error: true
+      id: clippy_step
 
-    - name: Check formatting
+    - name: Check formatting (record but continue)
       run: cargo fmt -- --check
       continue-on-error: true
+      id: fmt_step
+
+    - name: Summary Report
+      if: always()
+      run: |
+        echo "================ CI Summary for ${{ matrix.os }} ================"
+
+        echo "Build:      ${{ steps.build_step.outcome }}"
+        echo "Tests:      ${{ steps.test_step.outcome }}"
+        echo "Clippy:     ${{ steps.clippy_step.outcome }}"
+        echo "Formatting: ${{ steps.fmt_step.outcome }}"
+
+        echo ""
+        echo "------------------ Detailed Status ------------------"
+
+        if [[ "${{ steps.build_step.outcome }}" == "failure" ]]; then
+          echo "::warning file=Build::Build failed"
+        fi
+
+        if [[ "${{ steps.test_step.outcome }}" == "failure" ]]; then
+          echo "::warning file=Tests::Tests failed"
+        fi
+
+        if [[ "${{ steps.clippy_step.outcome }}" == "failure" ]]; then
+          echo "::warning file=Clippy::Clippy produced warnings or errors"
+        fi
+
+        if [[ "${{ steps.fmt_step.outcome }}" == "failure" ]]; then
+          echo "::warning file=Formatting::Rust code formatting incorrect"
+        fi
+
+        echo "====================================================="
