@@ -1,4 +1,5 @@
 pub mod tui;
+pub mod command;
 
 use tui::Tui;
 use crate::emulator::Emulator;
@@ -14,7 +15,9 @@ pub fn run() {
 
         // draw
         tui.draw(&emulator);
-        if !tui.poll()
+
+        // events
+        if !tui.poll(&mut emulator)
         {
             break;
         }

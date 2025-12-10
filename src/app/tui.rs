@@ -9,6 +9,7 @@ use ratatui::{
     widgets::Paragraph,
 };
 use crate::{emulator::Emulator};
+use super::command::{Command, LoadRomCommand, ResetCommand};
 
 const MENU_ITEMS: &[&str] = &[
     "Load ROM",
@@ -49,7 +50,7 @@ impl Tui {
         }
     }
 
-    pub fn poll(&mut self) -> bool {
+    pub fn poll(&mut self, emulator: &mut Emulator) -> bool {
         if event::poll(std::time::Duration::from_millis(16)).unwrap() {
             if let Event::Key(key) = event::read().unwrap() {
                 if key.kind == KeyEventKind::Press {
@@ -57,7 +58,7 @@ impl Tui {
                         UiMode::Shell => {
                             match key.code {
                                 KeyCode::Esc => self.mode = UiMode::Debug,
-                                KeyCode::Enter => self.execute_command(),
+                                KeyCode::Enter => self.execute_command(emulator),
                                 KeyCode::Backspace => { self.command_buffer.pop(); },
                                 KeyCode::Char(c) => self.command_buffer.push(c),
                                 _ => {}
@@ -180,20 +181,31 @@ impl Tui {
         }).unwrap();
     }
 
-    fn execute_command(&mut self) {
+    fn execute_command(&mut self, emulator: &mut Emulator) {
         let cmd = self.command_buffer.trim().to_string();
-        self.command_history.push(cmd.clone());
+        self.command_history.push(format!("> {}", cmd));
         self.command_buffer.clear();
 
-        match cmd.as_str() {
-            "help" => self.command_history.push("Commands: help, load <file>, reset".into()),
-            "reset" => self.command_history.push("Resetting emulator...".into()),
-            other if other.starts_with("load ") => {
-                let path = &other[5..];
-                self.command_history.push(format!("Loading ROM: {}", path));
-                // TODO: call emulator.load_rom(path)
+        let parts: Vec<&str> = cmd.split_whitespace().collect();
+        if parts.is_empty() { return; }
+
+        match parts[0] {
+            "help" => {
+                self.command_history.push("Commands: help, load <file>, reset".into());
             }
-            _ => self.command_history.push("Unknown command".into()),
+
+            "reset" => {
+                self.command_history.push(ResetCommand.execute(emulator));
+            }
+
+            "load" if parts.len() == 2 => {
+                let path = parts[1].to_string();
+                self.command_history.push(LoadRomCommand{path}.execute(emulator));
+            }
+
+            _ => {
+                self.command_history.push("Unknown command".into());
+            }
         }
     }
 

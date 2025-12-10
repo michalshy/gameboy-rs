@@ -1,7 +1,8 @@
+use std::fmt::Error;
+
 use crate::cpu::Cpu;
-use crate::mmu::cartridge::Cartridge;
 use crate::mmu::memory::Memory;
-use crate::mmu::{Mmu, cartridge, memory};
+use crate::mmu::{Mmu};
 use crate::ppu::Ppu;
 use crate::timer::Timer;
 use crate::interrupts::InterruptController;
@@ -41,7 +42,11 @@ impl Emulator {
         cycles
     }
 
-    pub fn display(&self) {
+    pub fn load_rom(&mut self, path: &str) -> Result<(),Error> {
+        Ok(())
+    }
 
+    pub fn reset(&mut self) -> Result<(),Error> {
+        Ok(())
     }
 }
