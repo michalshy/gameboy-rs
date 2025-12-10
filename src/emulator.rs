@@ -10,14 +10,13 @@ use crate::serial::SerialPort;
 use crate::apu::Apu;
 
 pub struct Emulator {
-    cpu: Cpu,
-    mmu: Mmu,
+    pub cpu: Cpu,
+    pub mmu: Mmu,
 }
 
 impl Emulator {
     pub fn new() -> Self {
             let memory = Memory::new();
-            let cartridge = Cartridge::empty();
 
             let cpu = Cpu::new(); 
             let ppu = Ppu::new();
@@ -26,7 +25,7 @@ impl Emulator {
             let joypad = Joypad::new();
             let serial = SerialPort::new(); 
             let apu = Apu::new();
-            let mmu = Mmu::new(memory, cartridge, timer, ppu, joypad, interrupt_controller, serial, apu);
+            let mmu = Mmu::new(memory, None, timer, ppu, joypad, interrupt_controller, serial, apu);
 
         return Self { 
             cpu,
@@ -40,5 +39,9 @@ impl Emulator {
         self.mmu.tick(cycles);
 
         cycles
+    }
+
+    pub fn display(&self) {
+
     }
 }

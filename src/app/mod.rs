@@ -13,7 +13,7 @@ pub fn run() {
         emulator.tick();
 
         // draw
-        tui.draw();
+        tui.draw(&emulator);
         if !tui.poll()
         {
             break;

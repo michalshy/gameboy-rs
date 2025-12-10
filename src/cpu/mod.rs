@@ -9,7 +9,7 @@ use decoder::decode;
 use crate::mmu::Mmu;
 
 pub struct Cpu {
-    registers: Registers
+    pub registers: Registers
 }
 
 impl Cpu {
