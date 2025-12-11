@@ -48,6 +48,66 @@ impl Cartridge {
         
        Ok(Self { rom, ram, mbc })
     }
+}
 
-    
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_detect_mbc() {
+        let mut rom = vec![0; 0x150];
+
+        rom[0x147] = 0x00;
+        assert!(matches!(detect_mbc(&rom).unwrap(), Mbcs::NoMbc));
+
+        for code in 0x01..=0x03 {
+            rom[0x147] = code;
+            assert!(matches!(detect_mbc(&rom).unwrap(), Mbcs::Mbc1));
+        }
+
+        for code in 0x05..=0x06 {
+            rom[0x147] = code;
+            assert!(matches!(detect_mbc(&rom).unwrap(), Mbcs::Mbc2));
+        }
+
+        for code in 0x0F..=0x13 {
+            rom[0x147] = code;
+            assert!(matches!(detect_mbc(&rom).unwrap(), Mbcs::Mbc3));
+        }
+
+        for code in 0x19..=0x1E {
+            rom[0x147] = code;
+            assert!(matches!(detect_mbc(&rom).unwrap(), Mbcs::Mbc5));
+        }
+
+        rom[0x147] = 0xFF;
+        assert!(detect_mbc(&rom).is_err());
+    }
+
+    #[test]
+    fn test_detect_ram_size() {
+        let mut rom = vec![0; 0x150];
+
+        rom[0x149] = 0x00;
+        assert_eq!(detect_ram_size(&rom).unwrap(), 0);
+
+        rom[0x149] = 0x01;
+        assert_eq!(detect_ram_size(&rom).unwrap(), 2);
+
+        rom[0x149] = 0x02;
+        assert_eq!(detect_ram_size(&rom).unwrap(), 8);
+
+        rom[0x149] = 0x03;
+        assert_eq!(detect_ram_size(&rom).unwrap(), 32);
+
+        rom[0x149] = 0x04;
+        assert_eq!(detect_ram_size(&rom).unwrap(), 128);
+
+        rom[0x149] = 0x05;
+        assert_eq!(detect_ram_size(&rom).unwrap(), 64);
+
+        rom[0x149] = 0xFF;
+        assert!(detect_ram_size(&rom).is_err());
+    }
 }
