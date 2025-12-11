@@ -6,10 +6,10 @@ pub trait Command {
     fn execute(&self, emulator: &mut Emulator) -> String;
 }
 
+// LOAD
 pub struct LoadRomCommand {
     pub path: String,
 }
-
 impl Command for LoadRomCommand {
     fn execute(&self, emulator: &mut Emulator) -> String {
         match emulator.load_rom(&self.path) {
@@ -18,14 +18,16 @@ impl Command for LoadRomCommand {
         }
     }
 }
-pub struct ResetCommand;
 
+// RESET
+pub struct ResetCommand;
 impl Command for ResetCommand {
     fn execute(&self, emulator: &mut Emulator) -> String {
         emulator.reset();
         format!("Emulator reset.")
     }
 }
+
 
 
 

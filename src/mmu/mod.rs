@@ -1,6 +1,8 @@
 pub mod memory;
 pub mod mbc;
 pub mod cartridge;
+use std::io::Error;
+
 use crate::{apu::Apu, interrupts::InterruptController, joypad::Joypad, ppu::Ppu, serial::SerialPort, timer::Timer};
 use memory::Memory;
 use cartridge::Cartridge;
@@ -87,6 +89,12 @@ impl Mmu {
 
     pub fn tick(&mut self, cycles: u32) {
         // TODO:
+    }
+
+    pub fn load_rom(&mut self, path: &str) -> Result<(),Error> {
+        let cartridge = Cartridge::new(path)?;
+        self.cartridge = Some(cartridge);
+        Ok(())
     }
 
     // Helper functions

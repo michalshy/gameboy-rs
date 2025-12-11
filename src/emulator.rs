@@ -1,4 +1,4 @@
-use std::fmt::Error;
+use std::io::Error;
 
 use crate::cpu::Cpu;
 use crate::mmu::memory::Memory;
@@ -43,7 +43,7 @@ impl Emulator {
     }
 
     pub fn load_rom(&mut self, path: &str) -> Result<(),Error> {
-        Ok(())
+        self.mmu.load_rom(path)
     }
 
     pub fn reset(&mut self) -> Result<(),Error> {

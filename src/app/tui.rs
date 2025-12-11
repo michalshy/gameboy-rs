@@ -1,5 +1,5 @@
 use std::io::Stdout;
-
+use std::env;
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
     terminal::{enable_raw_mode, disable_raw_mode},
@@ -10,12 +10,6 @@ use ratatui::{
 };
 use crate::{emulator::Emulator};
 use super::command::{Command, LoadRomCommand, ResetCommand};
-
-const MENU_ITEMS: &[&str] = &[
-    "Load ROM",
-    "Reset Emulator",
-];
-
 enum UiMode {
     Debug,
     Shell,
@@ -46,7 +40,7 @@ impl Tui {
     pub fn draw(&mut self, emulator: &Emulator) {
         match self.mode {
             UiMode::Debug => self.draw_debug(&emulator),
-            UiMode::Shell => self.draw_shell(&emulator),
+            UiMode::Shell => self.draw_shell(),
         }
     }
 
@@ -67,7 +61,7 @@ impl Tui {
 
                         UiMode::Debug => {
                             match key.code {
-                                KeyCode::Char('q') => return false,
+                                KeyCode::Esc => return false,
                                 KeyCode::Char('`') => self.mode = UiMode::Shell,
                                 _ => {}
                             }
@@ -109,10 +103,14 @@ impl Tui {
         // CARTRIDGE INFO
         let cartridge_info = if let Some(cart) = &mmu.cartridge {
             format!(
-                "ROM\n\
+                "Cartridge info\n\
                 ----\n\
-                Size: {} KB\n",
+                ROM Size: {} KB\n\
+                RAM Size: {} KB\n\
+                MBC Type: {}\n",
                 cart.rom.len() / 1024,
+                cart.ram.len() / 1024,
+                cart.mbc.name()
             )
         } else {
             "No cartridge loaded\n".to_string()
@@ -155,29 +153,46 @@ impl Tui {
         }).unwrap();
     }
 
-    pub fn draw_shell(&mut self, emulator: &Emulator) {
+    pub fn draw_shell(&mut self) {
         self.terminal.draw(|frame| {
             let area = frame.size();
 
-            // Split into history (top) and input line (bottom)
+            // Split vertically: header | history | input
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
-                .constraints([Constraint::Percentage(90), Constraint::Percentage(10)])
+                .constraints([
+                    Constraint::Length(2),      // header (cwd + line)
+                    Constraint::Percentage(80), // history
+                    Constraint::Percentage(10), // input
+                ])
                 .split(area);
 
-            // HISTORY as Paragraph
-            let lines: Vec<Line> = self.command_history
+            // -------- HEADER --------
+            let cwd = env::current_dir()
+                .map(|p| p.display().to_string())
+                .unwrap_or("<unknown>".into());
+
+            let separator = "─".repeat(area.width as usize);
+            let header_lines = vec![
+                Line::from(cwd),
+                Line::from(separator),
+            ];
+
+            frame.render_widget(Paragraph::new(header_lines), chunks[0]);
+
+            // -------- HISTORY --------
+            let history_lines: Vec<Line> = self.command_history
                 .iter()
                 .map(|s| Line::from(s.clone()))
                 .collect();
 
-            frame.render_widget(Paragraph::new(lines), chunks[0]);
+            frame.render_widget(Paragraph::new(history_lines), chunks[1]);
 
-            // INPUT LINE
+            // -------- INPUT LINE --------
             let input = Paragraph::new(format!("> {}", self.command_buffer))
                 .style(Style::default().fg(Color::Yellow));
 
-            frame.render_widget(input, chunks[1]);
+            frame.render_widget(input, chunks[2]);
         }).unwrap();
     }
 
@@ -190,10 +205,6 @@ impl Tui {
         if parts.is_empty() { return; }
 
         match parts[0] {
-            "help" => {
-                self.command_history.push("Commands: help, load <file>, reset".into());
-            }
-
             "reset" => {
                 self.command_history.push(ResetCommand.execute(emulator));
             }
