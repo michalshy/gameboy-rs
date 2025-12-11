@@ -91,5 +91,6 @@ impl Cpu {
             Opcode::Undefined => {},
             Opcode::Prefix => {},
         }
+        self.registers.pc += 1;
     }
 }

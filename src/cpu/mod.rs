@@ -19,7 +19,6 @@ impl Cpu {
 
     pub fn step(&mut self, mmu: &mut Mmu) -> u32 {
         let opcode_byte = mmu.read_8(self.registers.pc);
-        
         let entry = decode(opcode_byte);
 
         self.execute_instruction(entry);
