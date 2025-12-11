@@ -15,7 +15,7 @@ pub trait Mbc {
 
     fn name(&self) -> &str;
 }
-
+////////////////////////////////////////////////////////////////////////////////
 pub struct NoMbc;
 impl NoMbc {
     pub fn new() -> Self {
@@ -24,24 +24,41 @@ impl NoMbc {
 }
 impl Mbc for NoMbc {
     fn read_rom(&self, rom: &[u8], addr: u16) -> u8 {
-        // If rom is empty, return 0xFF
-        rom.get(addr as usize).copied().unwrap_or(0xFF)
+        match addr {
+            0x0000..=0x7FFF => {
+                let idx = addr as usize;
+                rom.get(idx).copied().unwrap_or(0xFF)
+            }
+            _ => 0xFF,
+        }
     }
 
     fn write_rom(&mut self, _: &mut [u8], _: u16, _: u8) {
-
+        // ROM-only cartridges ignore writes in 0000..=7FFF
     }
 
     fn read_ram(&self, ram: &[u8], addr: u16) -> u8 {
-        ram.get(addr as usize).copied().unwrap_or(0xFF)
+        if !(0xA000..=0xBFFF).contains(&addr) {
+            return 0xFF;
+        }
+        let offset = (addr - 0xA000) as usize;
+        ram.get(offset).copied().unwrap_or(0xFF)
     }
 
-    fn write_ram(&mut self, _: &mut [u8], _: u16, _: u8) {
-
+    fn write_ram(&mut self, ram: &mut [u8], addr: u16, value: u8) {
+        if !(0xA000..=0xBFFF).contains(&addr) {
+            return;
+        }
+        let offset = (addr - 0xA000) as usize;
+        if let Some(b) = ram.get_mut(offset) {
+            *b = value;
+        }
     }
 
     fn name(&self) -> &str { "NoMbc" }
 }
+////////////////////////////////////////////////////////////////////////////////
+
 pub struct Mbc1 {
     ram_enabled: bool,
     rom_bank_low: u8,
@@ -134,6 +151,7 @@ impl Mbc for Mbc1 {
 
     fn name(&self) -> &str { "Mbc1" }
 }
+////////////////////////////////////////////////////////////////////////////////
 pub struct Mbc2;
 impl Mbc2 {
     pub fn new() -> Self {
@@ -160,6 +178,7 @@ impl Mbc for Mbc2 {
 
     fn name(&self) -> &str { "Mbc2" }
 }
+////////////////////////////////////////////////////////////////////////////////
 pub struct Mbc3;
 impl Mbc3 {
     pub fn new() -> Self {
@@ -186,6 +205,7 @@ impl Mbc for Mbc3 {
 
     fn name(&self) -> &str { "Mbc3" }
 }
+////////////////////////////////////////////////////////////////////////////////
 pub struct Mbc5;
 impl Mbc5 {
     pub fn new() -> Self {
@@ -212,3 +232,4 @@ impl Mbc for Mbc5 {
 
     fn name(&self) -> &str { "Mbc5" }
 }
+////////////////////////////////////////////////////////////////////////////////

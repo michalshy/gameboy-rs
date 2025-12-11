@@ -99,10 +99,13 @@ impl Mmu {
 
     // Helper functions
     fn read_rom(&mut self, addr: u16) -> u8 {
-        0
+        let cart = self.cartridge.as_ref().expect("Cartridge not loaded");
+        cart.mbc.read_rom(&cart.rom, addr)
     }
 
     fn write_rom(&mut self, addr: u16, value: u8) {
+        let cart = self.cartridge.as_mut().expect("Cartridge not loaded");
+        cart.mbc.write_rom(&mut cart.rom, addr, value);
     }
 
     fn read_vram(&mut self, addr: u16) -> u8 {
@@ -113,10 +116,13 @@ impl Mmu {
     }
 
     fn read_cartridge_ram(&mut self, addr: u16) -> u8 {
-        0
+        let cart = self.cartridge.as_ref().expect("Cartridge not loaded");
+        cart.mbc.read_ram(&cart.ram, addr)
     }
 
     fn write_cartridge_ram(&mut self, addr: u16, value: u8) {
+        let cart = self.cartridge.as_mut().expect("Cartridge not loaded");
+        cart.mbc.write_ram(&mut cart.ram, addr, value);
     }
 
     fn read_wram(&mut self, addr: u16) -> u8 {
