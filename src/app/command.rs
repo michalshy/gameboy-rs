@@ -23,7 +23,7 @@ impl Command for LoadRomCommand {
 pub struct ResetCommand;
 impl Command for ResetCommand {
     fn execute(&self, emulator: &mut Emulator) -> String {
-        emulator.reset();
+        let _ = emulator.reset();
         format!("Emulator reset.")
     }
 }

@@ -15,11 +15,19 @@ enum UiMode {
     Shell,
 }
 
+#[derive(PartialEq)]
+enum EmulatorMode {
+    Step,
+    Continuous,
+}
+
 pub struct Tui {
     terminal: Terminal<CrosstermBackend<Stdout>>,
     mode: UiMode,
     command_buffer: String,
     command_history: Vec<String>,
+    emulator_mode: EmulatorMode,
+    pub advance: bool,
 }
 
 impl Tui {
@@ -34,6 +42,8 @@ impl Tui {
             mode: UiMode::Debug,
             command_buffer: String::new(),
             command_history: Vec::new(),
+            emulator_mode: EmulatorMode::Step,
+            advance: false,
         }
     }
 
@@ -42,6 +52,10 @@ impl Tui {
             UiMode::Debug => self.draw_debug(&emulator),
             UiMode::Shell => self.draw_shell(),
         }
+    }
+
+    pub fn continuous(&self) -> bool {
+        self.emulator_mode == EmulatorMode::Continuous 
     }
 
     pub fn poll(&mut self, emulator: &mut Emulator) -> bool {
@@ -63,6 +77,11 @@ impl Tui {
                             match key.code {
                                 KeyCode::Esc => return false,
                                 KeyCode::Char('`') => self.mode = UiMode::Shell,
+                                KeyCode::Right => self.advance = true,
+                                KeyCode::Tab => match self.emulator_mode {
+                                    EmulatorMode::Continuous => self.emulator_mode = EmulatorMode::Step,
+                                    EmulatorMode::Step => self.emulator_mode = EmulatorMode::Continuous,
+                                }
                                 _ => {}
                             }
                         }
@@ -116,6 +135,18 @@ impl Tui {
             "No cartridge loaded\n".to_string()
         };
 
+        let instruction_info = if let Some(_cart) = &mmu.cartridge {
+            format!(
+                "Current instruction info\n\
+                ----\n\
+                Byte: {}\
+                ",
+                emulator.mmu.read_8(emulator.cpu.registers.pc)
+            )
+        } else {
+            "No cartridge loaded\n".to_string()
+        };
+
         self.terminal.draw(|frame| {
             let rows = Layout::default()
                 .direction(Direction::Vertical)
@@ -148,7 +179,7 @@ impl Tui {
             frame.render_widget(Paragraph::new(cpu_info), row0[2]);
             
             frame.render_widget(Paragraph::new("Empty panel!"), row1[0]);
-            frame.render_widget(Paragraph::new("Empty panel!"), row1[1]);
+            frame.render_widget(Paragraph::new(instruction_info), row1[1]);
             frame.render_widget(Paragraph::new(cartridge_info), row1[2]);
         }).unwrap();
     }

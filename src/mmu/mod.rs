@@ -41,7 +41,7 @@ impl Mmu {
             apu,
         }
     }
-    pub fn read_8(&mut self, addr: u16) -> u8 {
+    pub fn read_8(&self, addr: u16) -> u8 {
         match addr {
             0x000..=0x7FFF => self.read_rom(addr),
             0x8000..=0x9FFF  => self.read_vram(addr),
@@ -98,7 +98,7 @@ impl Mmu {
     }
 
     // Helper functions
-    fn read_rom(&mut self, addr: u16) -> u8 {
+    fn read_rom(&self, addr: u16) -> u8 {
         let cart = self.cartridge.as_ref().expect("Cartridge not loaded");
         cart.mbc.read_rom(&cart.rom, addr)
     }
@@ -108,14 +108,14 @@ impl Mmu {
         cart.mbc.write_rom(&mut cart.rom, addr, value);
     }
 
-    fn read_vram(&mut self, addr: u16) -> u8 {
+    fn read_vram(&self, addr: u16) -> u8 {
         0
     }
 
-    fn write_vram(&mut self, addr: u16, value: u8) {
+    fn write_vram(&self, addr: u16, value: u8) {
     }
 
-    fn read_cartridge_ram(&mut self, addr: u16) -> u8 {
+    fn read_cartridge_ram(&self, addr: u16) -> u8 {
         let cart = self.cartridge.as_ref().expect("Cartridge not loaded");
         cart.mbc.read_ram(&cart.ram, addr)
     }
@@ -125,28 +125,28 @@ impl Mmu {
         cart.mbc.write_ram(&mut cart.ram, addr, value);
     }
 
-    fn read_wram(&mut self, addr: u16) -> u8 {
+    fn read_wram(&self, addr: u16) -> u8 {
         0
     }
 
     fn write_wram(&mut self, addr: u16, value: u8) {
     }
 
-    fn read_echo(&mut self, addr: u16) -> u8 {
+    fn read_echo(&self, addr: u16) -> u8 {
         0
     }
 
     fn write_echo(&mut self, addr: u16, value: u8) {
     }
 
-    fn read_oam(&mut self, addr: u16) -> u8 {
+    fn read_oam(&self, addr: u16) -> u8 {
         0
     }
 
     fn write_oam(&mut self, addr: u16, value: u8) {
     }
 
-    fn read_hram(&mut self, addr: u16) -> u8 {
+    fn read_hram(&self, addr: u16) -> u8 {
         0
     }
 

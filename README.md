@@ -4,8 +4,11 @@ A compact, modular Game Boy emulator written in Rust. The project focuses on cor
 Status
 ------
 - Work in progress — core layout and scaffolding in place.
-- CPU decoder, register helpers and opcode table exist; instruction semantics are being implemented.
-- MMU, PPU and APU have basic stubs to allow incremental development.
+- **CPU**: Decoder, register helpers and opcode table complete; instruction semantics being implemented.
+- **MMU**: Basic memory map with VRAM, WRAM, HRAM, OAM; cartridge and MBC detection functional.
+- **Cartridge**: ROM loading, MBC type detection (NoMBC, MBC1-5), and RAM sizing implemented.
+- **App**: TUI shell with command system; supports ROM loading and emulator reset.
+- **PPU & APU**: Basic stubs with register read/write; full implementations pending.
 
 Goals
 -----
@@ -21,7 +24,17 @@ Repository layout (high level)
 - `src/ppu/` — PPU registers and renderer (WIP).
 - `src/apu/` — audio channel stubs (WIP).
 - `src/app/` — small TUI to drive the emulator and display state.
+- `src/debug/` — disassembler and instruction logger.
 - `roms/` — test ROMs and CPU instruction test cartridges.
+
+Implemented features
+--------------------
+- **CPU Registers**: All 8-bit and 16-bit registers (A, F, B, C, D, E, H, L, SP, PC) with flag accessors.
+- **CPU Decoder**: Complete opcode table (256 main opcodes + 256 CB-prefixed) with cycle counts.
+- **MMU**: Memory management with separate regions (ROM, VRAM, WRAM, HRAM, OAM, cartridge RAM).
+- **Cartridge System**: Automatic MBC detection; supports NoMBC, MBC1, MBC2, MBC3, MBC5.
+- **TUI Commands**: Shell interface with ROM loading (`load-rom <path>`) and emulator reset.
+- **Emulator Core**: CPU step-cycle integration with MMU; tick-based synchronization.
 
 Quick start
 -----------
@@ -38,6 +51,15 @@ Run (debug build):
 ```
 cargo run
 ```
+
+Loading a ROM
+Once running, use the shell command:
+
+```
+load-rom <path-to-rom>
+```
+
+Example: `load-rom roms/tetris.gb`
 
 Contributing
 ------------

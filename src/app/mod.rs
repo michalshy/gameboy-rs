@@ -11,7 +11,12 @@ pub fn run() {
 
     loop {
         // logic
-        emulator.tick();
+        if tui.advance || tui.continuous() {
+            emulator.tick();
+            if tui.advance {
+                tui.advance = false;
+            }
+        }
 
         // draw
         tui.draw(&emulator);

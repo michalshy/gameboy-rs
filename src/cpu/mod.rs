@@ -17,8 +17,8 @@ impl Cpu {
         Self { registers: Registers::new() }
     }
 
-    pub fn step(&mut self, mmu: &Mmu) -> u32 {
-        let opcode_byte = 0x00; // (temporary placeholder)
+    pub fn step(&mut self, mmu: &mut Mmu) -> u32 {
+        let opcode_byte = mmu.read_8(self.registers.pc);
         
         let entry = decode(opcode_byte);
 
