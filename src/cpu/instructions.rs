@@ -3,7 +3,7 @@ use crate::cpu::Cpu;
 use crate::mmu::Mmu;
 
 impl Cpu {
-    pub fn execute_instruction(&mut self, entry: &OpcodeEntry, mmu: &Mmu) {
+    pub fn execute_instruction(&mut self, entry: &OpcodeEntry, mmu: &mut Mmu) {
         match &entry.opcode {
             Opcode::LdR8R8(r8, r9) => {},
             Opcode::LdR8N8(r8) => {},
@@ -70,7 +70,9 @@ impl Cpu {
             Opcode::Ret => {},
             Opcode::RetCC(cc) => {},
             Opcode::RetI => {},
-            Opcode::Rst(_) => {},
+            Opcode::Rst(v) => {
+                
+            },
             Opcode::Scf => {},
             Opcode::Ccf => {},
             Opcode::AddHLSP => {},
@@ -78,14 +80,20 @@ impl Cpu {
             Opcode::LdHLSPe8 => {},
             Opcode::DecSP => {},
             Opcode::IncSP => {},
-            Opcode::LdSPN16 => {},
+            Opcode::LdSPN16 => {
+                self.registers.sp = mmu.read_16(self.registers.pc + 1);
+                self.registers.pc += 1;
+            },
             Opcode::LdPtrN16SP => {},
             Opcode::LdSPHL => {},
             Opcode::PopAF => {},
             Opcode::PopR16(r16) => {},
             Opcode::PushAF => {},
             Opcode::PushR16(r16) => {},
-            Opcode::Di => {},
+            Opcode::Di => {
+                mmu.interrupts.ie = 0;
+                self.registers.pc += 1;
+            },
             Opcode::Ei => {},
             Opcode::Halt => {},
             Opcode::Daa => {},
