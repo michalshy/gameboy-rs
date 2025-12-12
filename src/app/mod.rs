@@ -1,6 +1,7 @@
+use std::env;
+
 pub mod tui;
 pub mod command;
-
 use tui::Tui;
 use crate::emulator::Emulator;
 
@@ -8,6 +9,8 @@ pub fn run() {
 
     let mut tui = Tui::new();
     let mut emulator = Emulator::new();
+
+    handle_arguments(&mut emulator);
 
     loop {
         // logic
@@ -29,4 +32,11 @@ pub fn run() {
     }
 
     tui.shutdown();
+}
+
+pub fn handle_arguments(emulator: &mut Emulator) {
+    let args: Vec<String> = env::args().collect();
+    if args.len() > 1 {
+        emulator.load_rom(&args[1]).unwrap();
+    }
 }

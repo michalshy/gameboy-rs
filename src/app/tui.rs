@@ -8,7 +8,7 @@ use ratatui::{
     prelude::*,
     widgets::Paragraph,
 };
-use crate::{emulator::Emulator};
+use crate::{cpu::decoder::{Opcode, OpcodeEntry}, debug::disasm::{self, disassemble}, emulator::Emulator};
 use super::command::{Command, LoadRomCommand, ResetCommand};
 enum UiMode {
     Debug,
@@ -100,12 +100,12 @@ impl Tui {
         let cpu_info = format!(
             "CPU\n\
             ----\n\
-            PC: {:04X}\n\
-            SP: {:04X}\n\
-            A:  {:02X}  F: {:02X}\n\
-            B:  {:02X}  C: {:02X}\n\
-            D:  {:02X}  E: {:02X}\n\
-            H:  {:02X}  L: {:02X}\n\
+            PC: 0x{:04X}\n\
+            SP: 0x{:04X}\n\
+            A:  0x{:02X}  F: 0x{:02X}\n\
+            B:  0x{:02X}  C: 0x{:02X}\n\
+            D:  0x{:02X}  E: 0x{:02X}\n\
+            H:  0x{:02X}  L: 0x{:02X}\n\
             \n",
             cpu.registers.pc,
             cpu.registers.sp,
@@ -139,9 +139,15 @@ impl Tui {
             format!(
                 "Current instruction info\n\
                 ----\n\
-                Byte: {}\
+                Byte: 0x{:02X}\n\
+                Byte + 1: 0x{:02X}\n\
+                Byte + 2: 0x{:02X}\n\
+                Opcode: {}\n\
                 ",
-                emulator.mmu.read_8(emulator.cpu.registers.pc)
+                emulator.mmu.read_8(emulator.cpu.registers.pc),
+                emulator.mmu.read_8(emulator.cpu.registers.pc + 1),
+                emulator.mmu.read_8(emulator.cpu.registers.pc + 2),
+                disassemble(&emulator.cpu.get_current_opcode(mmu).opcode)
             )
         } else {
             "No cartridge loaded\n".to_string()

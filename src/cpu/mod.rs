@@ -6,7 +6,7 @@ pub mod instructions;
 use registers::Registers;
 use decoder::decode;
 
-use crate::mmu::Mmu;
+use crate::{cpu::decoder::OpcodeEntry, mmu::Mmu};
 
 pub struct Cpu {
     pub registers: Registers
@@ -21,8 +21,13 @@ impl Cpu {
         let opcode_byte = mmu.read_8(self.registers.pc);
         let entry = decode(opcode_byte);
 
-        self.execute_instruction(entry);
+        self.execute_instruction(entry, mmu);
     
         entry.cycles as u32
+    }
+
+    pub fn get_current_opcode(&self, mmu: &Mmu) -> &OpcodeEntry {
+        let opcode_byte = mmu.read_8(self.registers.pc);
+        decode(opcode_byte)
     }
 }

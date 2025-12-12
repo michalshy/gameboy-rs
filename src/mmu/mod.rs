@@ -74,7 +74,7 @@ impl Mmu {
         }
     }
 
-    pub fn read_16(&mut self, addr: u16) -> u16 {
+    pub fn read_16(&self, addr: u16) -> u16 {
         let lo = self.read_8(addr) as u16;
         let hi = self.read_8(addr.wrapping_add(1)) as u16;
         hi << 8 | lo

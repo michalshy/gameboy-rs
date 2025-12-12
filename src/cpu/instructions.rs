@@ -1,8 +1,9 @@
 use crate::cpu::decoder::{OpcodeEntry, Opcode};
 use crate::cpu::Cpu;
+use crate::mmu::Mmu;
 
 impl Cpu {
-    pub fn execute_instruction(&mut self, entry: &OpcodeEntry) {
+    pub fn execute_instruction(&mut self, entry: &OpcodeEntry, mmu: &Mmu) {
         match &entry.opcode {
             Opcode::LdR8R8(r8, r9) => {},
             Opcode::LdR8N8(r8) => {},
@@ -60,7 +61,9 @@ impl Cpu {
             Opcode::CallN16 => {},
             Opcode::CallCCN16(cc) => {},
             Opcode::JpHL => {},
-            Opcode::JpN16 => {},
+            Opcode::JpN16 => {
+                self.registers.pc = mmu.read_16(self.registers.pc.wrapping_add(1));
+            },
             Opcode::JpCCN16(cc) => {},
             Opcode::JrE8 => {},
             Opcode::JrCCE8(cc) => {},
@@ -86,11 +89,12 @@ impl Cpu {
             Opcode::Ei => {},
             Opcode::Halt => {},
             Opcode::Daa => {},
-            Opcode::Nop => {},
+            Opcode::Nop => {
+                self.registers.pc += 1;
+            },
             Opcode::Stop => {},
             Opcode::Undefined => {},
             Opcode::Prefix => {},
         }
-        self.registers.pc += 1;
     }
 }
