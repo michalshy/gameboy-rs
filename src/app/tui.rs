@@ -1,14 +1,15 @@
 use std::io::Stdout;
 use std::env;
+use crossterm::execute;
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
-    terminal::{enable_raw_mode, disable_raw_mode},
+    terminal::{enable_raw_mode, disable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{
     prelude::*,
     widgets::Paragraph,
 };
-use crate::{cpu::decoder::{Opcode, OpcodeEntry}, debug::disasm::{self, disassemble}, emulator::Emulator};
+use crate::{debug::disasm::{disassemble}, emulator::Emulator};
 use super::command::{Command, LoadRomCommand, ResetCommand};
 enum UiMode {
     Debug,
@@ -33,7 +34,8 @@ pub struct Tui {
 impl Tui {
     pub fn new() -> Self {
         enable_raw_mode().unwrap();
-        let stdout = std::io::stdout();
+        let mut stdout = std::io::stdout();
+        execute!(stdout, EnterAlternateScreen).unwrap();
         let backend = CrosstermBackend::new(stdout);
         let terminal = Terminal::new(backend).unwrap();
 
@@ -259,5 +261,6 @@ impl Tui {
 
     pub fn shutdown(&mut self) {
         disable_raw_mode().unwrap();
+        execute!(self.terminal.backend_mut(), LeaveAlternateScreen).unwrap();
     }
 }

@@ -22,7 +22,7 @@ impl Cpu {
         let entry = decode(opcode_byte);
 
         self.execute_instruction(entry, mmu);
-    
+
         entry.cycles as u32
     }
 

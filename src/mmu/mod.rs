@@ -7,6 +7,8 @@ use crate::{apu::Apu, interrupts::InterruptController, joypad::Joypad, ppu::Ppu,
 use memory::Memory;
 use cartridge::Cartridge;
 
+pub const HIGH_RAM: u16 = 0xFF00;
+
 pub struct Mmu {
     pub memory: Memory,
     pub cartridge: Option<Cartridge>,

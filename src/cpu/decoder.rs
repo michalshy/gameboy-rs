@@ -620,7 +620,6 @@ pub enum Opcode {
     LdHPtrCA, // loads a to byte pointer by 0xff00 + c
     LdAPtrR16(R16), // loads value from address reg into A
     LdAPtrN16, // loads value from address val into A
-    LdHAPtrN16, // loads value from address 0xff00 + val into A
     LdHAPtrC,
     LDHAPtrN8,
     LDHPtrN8A,

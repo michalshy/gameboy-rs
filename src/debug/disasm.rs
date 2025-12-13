@@ -139,7 +139,6 @@ pub fn disassemble(opcode: &Opcode) -> String {
         Opcode::Ei => "EI".into(),
         Opcode::Undefined => "DB ??".into(),
         Opcode::LdHPtrCA => "LD (0xFF00+C),A".into(),
-        Opcode::LdHAPtrN16 => "LD A,(0xFF00+n)".into(),
         Opcode::DecSP => "DEC SP".into(),
         Opcode::IncSP => "INC SP".into(),
     }
