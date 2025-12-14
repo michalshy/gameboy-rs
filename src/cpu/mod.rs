@@ -2,19 +2,21 @@
 pub mod registers;
 pub mod decoder;
 pub mod instructions;
+pub mod interrupts;
 
 use registers::Registers;
 use decoder::decode;
 
-use crate::{cpu::decoder::OpcodeEntry, mmu::Mmu};
+use crate::{cpu::{decoder::OpcodeEntry, interrupts::Interrupts}, mmu::Mmu};
 
 pub struct Cpu {
-    pub registers: Registers
+    pub registers: Registers,
+    pub int: Interrupts,
 }
 
 impl Cpu {
     pub fn new() -> Self {
-        Self { registers: Registers::new() }
+        Self { registers: Registers::new(), int: Interrupts::new() }
     }
 
     pub fn step(&mut self, mmu: &mut Mmu) -> u32 {
