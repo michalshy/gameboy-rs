@@ -251,11 +251,47 @@ impl Cpu {
                 let value = self.read_r16(reg);
                 self.write_r16(reg, value.wrapping_add(1));
             },
-            Opcode::AndAR8(reg) => {},
-            Opcode::AndAN8 => {},
-            Opcode::Cpl => {},
-            Opcode::OrAR8(reg) => {},
-            Opcode::OrAN8 => {},
+            Opcode::AndAR8(reg) => {
+                self.registers.a &= self.read_r8(reg, mmu);
+                self.registers.set_flags(
+                    self.registers.a == 0, 
+                    false, 
+                    true, 
+                    false
+                );
+            },
+            Opcode::AndAN8 => {
+                self.registers.a &= mmu.read_8(self.registers.pc + 1);
+                self.registers.set_flags(
+                    self.registers.a == 0, 
+                    false, 
+                    true, 
+                    false
+                );
+            },
+            Opcode::Cpl => {
+                self.registers.a = !self.registers.a;
+                self.registers.set_flag(Flags::N, true);
+                self.registers.set_flag(Flags::H, true);
+            },
+            Opcode::OrAR8(reg) => {
+                self.registers.a |= self.read_r8(reg, mmu);
+                self.registers.set_flags(
+                    self.registers.a == 0, 
+                    false, 
+                    false, 
+                    false
+                );
+            },
+            Opcode::OrAN8 => {
+                self.registers.a |= mmu.read_8(self.registers.pc + 1);
+                self.registers.set_flags(
+                    self.registers.a == 0, 
+                    false, 
+                    false, 
+                    false
+                );
+            },
             Opcode::XorAR8(reg) => {},
             Opcode::XorAN8 => {},
             Opcode::Bit(n, reg) => {},
@@ -319,8 +355,12 @@ impl Cpu {
                 // Nothing
             },
             Opcode::Stop => {},
-            Opcode::Undefined => {},
-            Opcode::Prefix => {},
+            Opcode::Undefined => {
+                // Undefined
+            },
+            Opcode::Prefix => {
+                // Marks CB opcode
+            },
         }
         if increment {
             self.increment_pc(entry.length as u16);
