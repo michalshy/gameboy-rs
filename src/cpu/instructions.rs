@@ -484,13 +484,15 @@ impl Cpu {
             Opcode::CallN16 => {
                 let target = mmu.read_16(self.registers.pc + 1);
                 let ret = self.registers.pc + 3;
-
+                // pushes instruction after to the stack 
                 self.push_u16(mmu, ret);
+                // jp n16
                 self.registers.pc = target;
                 increment = false;
             }
             Opcode::CallCCN16(cc) => {
                 if self.condition_met(cc) {
+                    //TODO: cycles
                     let target = mmu.read_16(self.registers.pc + 1);
                     let ret = self.registers.pc + 3;
 
@@ -499,14 +501,34 @@ impl Cpu {
                     increment = false;
                 }
             },
-            Opcode::JpHL => {},
+            Opcode::JpHL => {
+                self.registers.pc = self.registers.hl();
+            },
             Opcode::JpN16 => {
                 self.registers.pc = mmu.read_16(self.registers.pc.wrapping_add(1));
                 increment = false;
             },
-            Opcode::JpCCN16(cc) => {},
-            Opcode::JrE8 => {},
-            Opcode::JrCCE8(cc) => {},
+            Opcode::JpCCN16(cc) => {
+                if self.condition_met(cc) {
+                    //TODO: CYCLES
+                    self.registers.pc = mmu.read_16(self.registers.pc.wrapping_add(1));
+                    increment = false;
+                }
+            },
+            Opcode::JrE8 => {
+                let offset = mmu.read_8(self.registers.pc + 1) as i8;
+                let pc = self.registers.pc.wrapping_add(2);
+                self.registers.pc = ((pc as i32) + (offset as i32)) as u16;
+                increment = false;
+            },
+            Opcode::JrCCE8(cc) => {
+                if self.condition_met(cc) {
+                    let offset = mmu.read_8(self.registers.pc + 1) as i8;
+                    let pc = self.registers.pc.wrapping_add(2);
+                    self.registers.pc = ((pc as i32) + (offset as i32)) as u16;
+                    increment = false;
+                }
+            },
             Opcode::Ret => {
                 self.registers.pc = self.pop_u16(mmu);
                 increment = false;
@@ -519,40 +541,121 @@ impl Cpu {
             },
             Opcode::RetI => {
                 self.int.ime = true;
-            },
-            Opcode::Rst(n) => {
-                self.push_u16(mmu, self.registers.pc + 1);
-                self.registers.pc = *n as u16;
+                self.registers.pc = self.pop_u16(mmu);
                 increment = false;
             },
-            Opcode::Scf => {},
-            Opcode::Ccf => {},
-            Opcode::AddHLSP => {},
-            Opcode::AddSPe8 => {},
-            Opcode::LdHLSPe8 => {},
-            Opcode::DecSP => {},
-            Opcode::IncSP => {},
+            Opcode::Rst(vec) => {
+                self.push_u16(mmu, self.registers.pc.wrapping_add(1));
+                self.registers.pc = *vec as u16;
+                increment = false;
+            },
+            Opcode::Scf => {
+                self.registers.set_flag(Flags::H, false);
+                self.registers.set_flag(Flags::N, false);
+                self.registers.set_flag(Flags::C, true);
+            },
+            Opcode::Ccf => {
+                self.registers.set_flag(Flags::H, false);
+                self.registers.set_flag(Flags::N, false);
+                self.registers.set_flag(Flags::C, self.registers.get_flag(Flags::C) == 0);
+            },
+            Opcode::AddHLSP => {
+                let hl = self.registers.hl();
+                let value = self.registers.sp;
+                self.registers.set_flag(Flags::H, (hl & 0x0FFF) + (value & 0x0FFF) > 0x0FFF);
+                self.registers.set_flag(Flags::N, false);
+                self.registers.set_flag(Flags::C, hl as u32 + value as u32 > 0x0000FFFF);
+                self.registers.set_hl(hl.wrapping_add(value));
+            },
+            Opcode::AddSPe8 => {
+                let offset = mmu.read_8(self.registers.pc + 1) as i8;
+                let sp = self.registers.sp;
+
+                let unsigned = offset as u16;
+
+                self.registers.set_flag(Flags::Z, false);
+                self.registers.set_flag(Flags::N, false);
+                self.registers.set_flag(
+                    Flags::H,
+                    ((sp & 0x000F) + (unsigned & 0x000F)) > 0x000F
+                );
+                self.registers.set_flag(
+                    Flags::C,
+                    ((sp & 0x00FF) + (unsigned & 0x00FF)) > 0x00FF
+                );
+
+                self.registers.sp = sp.wrapping_add(unsigned);
+            }
+            Opcode::LdHLSPe8 => {
+                let offset = mmu.read_8(self.registers.pc + 1) as i8;
+                let sp = self.registers.sp;
+
+                let unsigned = offset as u16;
+
+                self.registers.set_flag(Flags::Z, false);
+                self.registers.set_flag(Flags::N, false);
+                self.registers.set_flag(
+                    Flags::H,
+                    ((sp & 0x000F) + (unsigned & 0x000F)) > 0x000F
+                );
+                self.registers.set_flag(
+                    Flags::C,
+                    ((sp & 0x00FF) + (unsigned & 0x00FF)) > 0x00FF
+                );
+
+                let result = (sp as i32) + (offset as i32);
+                self.registers.set_hl(result as u16);
+            },
+            Opcode::DecSP => {
+                self.registers.sp = self.registers.sp.wrapping_sub(1);
+            },
+            Opcode::IncSP => {
+                self.registers.sp = self.registers.sp.wrapping_add(1);
+            },
             Opcode::LdSPN16 => {
                 self.registers.sp = mmu.read_16(self.registers.pc + 1);
             },
-            Opcode::LdPtrN16SP => {},
-            Opcode::LdSPHL => {},
-            Opcode::PopAF => {},
-            Opcode::PopR16(reg) => {},
-            Opcode::PushAF => {},
-            Opcode::PushR16(reg) => {},
+            Opcode::LdPtrN16SP => {
+                let addr = mmu.read_16(self.registers.pc + 1);
+                mmu.write_8(addr, (self.registers.sp & 0x00FF) as u8);
+                mmu.write_8(addr + 1, (self.registers.sp >> 8) as u8);
+            },
+            Opcode::LdSPHL => {
+                self.registers.sp = self.registers.hl();
+            },
+            Opcode::PopAF => {
+                self.registers.f = self.pop_u8(mmu) & 0xF0; // mask low 4 bits
+                self.registers.a = self.pop_u8(mmu);
+            },
+            Opcode::PopR16(reg) => {
+                let value = self.pop_u16(mmu);
+                self.write_r16(reg, value);
+            },
+            Opcode::PushAF => {
+                self.push_u16(mmu, self.registers.af());
+            },
+            Opcode::PushR16(reg) => {
+                let value = self.read_r16(reg);
+                self.push_u16(mmu, value);
+            },
             Opcode::Di => {
                 self.int.ime = false;
             },
             Opcode::Ei => {
                 self.int.ime_scheduled = true;
             },
-            Opcode::Halt => {},
-            Opcode::Daa => {},
+            Opcode::Halt => {
+                // TODO: calls to interrupt controller
+            },
+            Opcode::Daa => {
+
+            },
             Opcode::Nop => {
                 // Nothing
             },
-            Opcode::Stop => {},
+            Opcode::Stop => {
+
+            },
             Opcode::Undefined => {
                 // Undefined
             },
