@@ -62,7 +62,6 @@ impl Mmu {
         0xFF80..=0xFFFE => self.read_hram(addr),
         0xFFFF => self.interrupts.ie,
         0xFF00..=0xFF7F => 0xFF,
-            _ => { panic!("Memory access violation!"); }
         }
     }
 

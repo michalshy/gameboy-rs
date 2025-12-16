@@ -51,7 +51,7 @@ impl Widget for MemoryWidget {
         }
 
         let widget = Paragraph::new(lines)
-            .block(Block::default().title("Memory").borders(Borders::ALL));
+            .block(Block::default());
 
         frame.render_widget(widget, area);
     }

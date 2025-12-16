@@ -1,8 +1,8 @@
 pub struct Memory {
-    vram: [u8; 0x2000],
-    wram: [u8; 0x2000],
-    hram: [u8; 0x7F],
-    oam: [u8; 0xA0],
+    pub vram: [u8; 0x2000],
+    pub wram: [u8; 0x2000],
+    pub hram: [u8; 0x7F],
+    pub oam: [u8; 0xA0],
 }
 
 impl Memory {

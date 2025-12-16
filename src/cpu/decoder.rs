@@ -1,5 +1,3 @@
-use crate::cpu::Cpu;
-
 static LOOKUP: [OpcodeEntry; 256] = [
     // 0x00–0x1F
     OpcodeEntry { opcode: Opcode::Nop, length: 1, cycles: 4 },                     // 0x00
@@ -599,6 +597,8 @@ pub enum R8 {
     A, B, C, D, E, H, L, HLIndirect
 }
 
+#[allow(clippy::enum_variant_names)]
+#[allow(dead_code)]
 pub enum R16 {
     AF, BC, DE, HL, SP, PC
 }
@@ -610,6 +610,8 @@ pub enum CC {
     C,
 }
 
+#[allow(clippy::enum_variant_names)]
+#[allow(dead_code)]
 pub enum Opcode {
     // Load
     LdR8R8(R8, R8), // load value in right reg to left reg

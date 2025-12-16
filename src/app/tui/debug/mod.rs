@@ -7,10 +7,11 @@ use mem::MemoryWidget;
 use std::io::Stdout;
 
 use crossterm::event::{KeyCode, KeyEvent};
-use ratatui::{Frame, Terminal, layout::{Constraint, Direction, Layout, Rect}, prelude::CrosstermBackend};
+use ratatui::{Frame, Terminal, layout::{Constraint, Direction, Layout, Rect}, prelude::CrosstermBackend, style::{Color, Modifier, Style}, widgets::{Block, Borders}};
 
 use crate::{app::tui::View, emulator::Emulator};
 
+#[derive(PartialEq)]
 enum Focus {
     Info,
     Memory,
@@ -54,6 +55,32 @@ impl View for DebugView {
         terminal: &mut Terminal<CrosstermBackend<Stdout>>,
         emulator: &Emulator,
     ) {
+        let info_style = if self.focus == Focus::Info {
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD)
+        } else {
+            Style::default()
+        };
+
+        let memory_style = if self.focus == Focus::Memory {
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD)
+        } else {
+            Style::default()
+        };
+
+        let info_block = Block::default()
+            .title("Info")
+            .borders(Borders::ALL)
+            .border_style(info_style);
+
+        let mem_block = Block::default()
+            .title("Memory")
+            .borders(Borders::ALL)
+            .border_style(memory_style);
+
         terminal.draw(|frame| {
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
@@ -63,8 +90,15 @@ impl View for DebugView {
                 ])
                 .split(frame.size());
 
-            self.info.draw_in(frame, chunks[0], emulator);
-            self.memory.draw_in(frame, chunks[1], emulator);
+            // INFO
+            frame.render_widget(info_block.clone(), chunks[0]);
+            let info_inner = info_block.inner(chunks[0]);
+            self.info.draw_in(frame, info_inner, emulator);
+
+            // MEMORY
+            frame.render_widget(mem_block.clone(), chunks[1]);
+            let mem_inner = mem_block.inner(chunks[1]);
+            self.memory.draw_in(frame, mem_inner, emulator);
         }).unwrap();
     }
 
@@ -74,7 +108,7 @@ impl View for DebugView {
         emulator: &mut Emulator,
     ) -> bool {
         match key.code {
-            KeyCode::Char('F') => {
+            KeyCode::Char('f') => {
                 self.focus = match self.focus {
                     Focus::Info => Focus::Memory,
                     Focus::Memory => Focus::Info,

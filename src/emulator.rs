@@ -47,6 +47,7 @@ impl Emulator {
     }
 
     pub fn reset(&mut self) -> Result<(),Error> {
+        self.cpu.registers.reset();
         Ok(())
     }
 }

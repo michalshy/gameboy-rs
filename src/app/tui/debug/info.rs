@@ -62,10 +62,7 @@ impl Widget for InfoView {
 
         let serial_output = &mmu.serial.output;
 
-        // OUTER BORDER
-        let outer = Block::default()
-            .title("Info")
-            .borders(Borders::ALL);
+        let outer = Block::default();
 
         frame.render_widget(&outer, area);
         let inner = outer.inner(area);

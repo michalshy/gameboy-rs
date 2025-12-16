@@ -82,16 +82,8 @@ impl Registers {
         if h { self.f |= Flags::H.bit(); }
         if c { self.f |= Flags::C.bit(); }
     }
-    pub fn clear_flags(&mut self, flags: &[Flags]) {
-        for flag in flags {
-            self.f &= !flag.bit();
-        }
-    }
     pub fn get_flag(&self, flag: Flags) -> u8 {
         self.f & flag.bit()
-    }
-    pub fn clear_flags_all(&mut self) {
-        self.f = 0;
     }
     pub fn reset(&mut self) { // resets to dmg state
        self.set_af(0x01B0); 
@@ -172,14 +164,6 @@ mod tests {
     }
 
     #[test]
-    fn test_clear_flags() {
-        let mut registers = Registers::new();
-        registers.f = 0xF0;
-        registers.clear_flags(&[Flags::Z, Flags::N]);
-        assert_eq!(registers.f, 0b0011_0000);
-    }
-
-    #[test]
     fn test_get_flag_set() {
         let mut registers = Registers::new();
         registers.set_flags(false, false, true, false);
@@ -192,8 +176,6 @@ mod tests {
         let mut registers = Registers::new();
         registers.set_flags(false, true,false, false);
         assert_eq!(registers.get_flag(Flags::N), Flags::N.bit());
-        registers.clear_flags(&[Flags::N]);
-        assert_eq!(registers.get_flag(Flags::N), 0);
     }
 
     #[test]
@@ -202,11 +184,6 @@ mod tests {
         registers.set_flags(true, true, true, true);
         assert_eq!(registers.get_flag(Flags::Z), Flags::Z.bit());
         assert_eq!(registers.get_flag(Flags::N), Flags::N.bit());
-        registers.clear_flags(&[Flags::N, Flags::H]);
-        assert_eq!(registers.get_flag(Flags::Z), Flags::Z.bit());
-        assert_eq!(registers.get_flag(Flags::N), 0);
-        assert_eq!(registers.get_flag(Flags::H), 0);
-        assert_eq!(registers.get_flag(Flags::C), Flags::C.bit());
     }
     #[test]
     fn test_reset_to_dmg_state() {
@@ -232,20 +209,6 @@ mod tests {
         assert_eq!(registers.pc, 0x0100);
     }
 
-    #[test]
-    fn test_clear_flags_all() {
-        let mut registers = Registers::new();
-        registers.set_flags(true, true, true, true);
-        assert_eq!(registers.f, 0xF0);
-        
-        registers.clear_flags_all();
-        
-        assert_eq!(registers.f, 0);
-        assert_eq!(registers.get_flag(Flags::Z), 0);
-        assert_eq!(registers.get_flag(Flags::N), 0);
-        assert_eq!(registers.get_flag(Flags::H), 0);
-        assert_eq!(registers.get_flag(Flags::C), 0);
-    }
     #[test]
     fn test_set_flag_method() {
         let mut registers = Registers::new();
