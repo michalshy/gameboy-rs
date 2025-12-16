@@ -1,9 +1,7 @@
-mod info;
-mod mem;
 mod ppu;
 mod shell;
+mod debug;
 use crossterm::event::KeyEvent;
-use ratatui::{Frame};
 use std::io::Stdout;
 use std::time::Duration;
 use crossterm::execute;
@@ -14,9 +12,9 @@ use crossterm::{
 use ratatui::{
     prelude::*,
 };
+use crate::app::tui::debug::DebugView;
 use crate::{emulator::Emulator};
 use shell::ShellView;
-use info::InfoView;
 
 #[derive(PartialEq)]
 enum EmulatorMode {
@@ -59,8 +57,8 @@ impl Tui {
         Self {
             terminal,
             views: vec![
-                Box::new(InfoView::new()),
                 Box::new(ShellView::new()),
+                Box::new(DebugView::new())
             ],
             active: 0,
             emulator_mode: EmulatorMode::Step,
