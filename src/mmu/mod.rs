@@ -7,6 +7,26 @@ use crate::{apu::Apu, interrupts::InterruptController, joypad::Joypad, ppu::Ppu,
 use memory::Memory;
 use cartridge::Cartridge;
 
+// Game Boy Memory Map
+//
+// 0000–3FFF   ROM Bank 0 (fixed)
+// 4000–7FFF   ROM Bank N (switchable, via MBC)
+// 8000–9FFF   VRAM (PPU)
+// A000–BFFF   External RAM (Cartridge RAM)
+// C000–CFFF   WRAM Bank 0
+// D000–DFFF   WRAM Bank 1 (switchable on CGB)
+// E000–FDFF   Echo RAM (mirror of C000–DDFF)
+// FE00–FE9F   OAM (Sprite Attribute Table)
+// FEA0–FEFF   Not usable
+// FF00        Joypad
+// FF01–FF02   Serial
+// FF04–FF07   Timer
+// FF0F        IF (Interrupt Flag)
+// FF10–FF3F   APU
+// FF40–FF4B   PPU Registers
+// FF80–FFFE   HRAM
+// FFFF        IE (Interrupt Enable)
+
 pub const HIGH_RAM: u16 = 0xFF00;
 
 pub struct Mmu {
@@ -92,14 +112,14 @@ impl Mmu {
         hi << 8 | lo
     }
 
-    pub fn write_16(&mut self, addr: u16, value: u16) {
-        let lo = (value & 0x00FF) as u8;
-        let hi = (value >> 8) as u8;
-        self.write_8(addr, lo);
-        self.write_8(addr.wrapping_add(1), hi);
-    }
+    // pub fn write_16(&mut self, addr: u16, value: u16) {
+    //     let lo = (value & 0x00FF) as u8;
+    //     let hi = (value >> 8) as u8;
+    //     self.write_8(addr, lo);
+    //     self.write_8(addr.wrapping_add(1), hi);
+    // }
 
-    pub fn tick(&mut self, cycles: u32) {
+    pub fn tick(&mut self, _cycles: u32) {
         // TODO:
     }
 
@@ -121,10 +141,13 @@ impl Mmu {
     }
 
     fn read_vram(&self, addr: u16) -> u8 {
-        0
+        let offset = (addr - 0x8000) as usize;
+        self.memory.vram[offset]
     }
 
-    fn write_vram(&self, addr: u16, value: u8) {
+    fn write_vram(&mut self, addr: u16, value: u8) {
+        let offset = (addr - 0x8000) as usize;
+        self.memory.vram[offset] = value;
     }
 
     fn read_cartridge_ram(&self, addr: u16) -> u8 {
@@ -138,30 +161,40 @@ impl Mmu {
     }
 
     fn read_wram(&self, addr: u16) -> u8 {
-        0
+        let offset = addr - 0xC000;
+        self.memory.wram[offset as usize]
     }
 
     fn write_wram(&mut self, addr: u16, value: u8) {
+        let offset = addr - 0xC000;
+        self.memory.wram[offset as usize] = value;
     }
 
     fn read_echo(&self, addr: u16) -> u8 {
-        0
+        self.read_wram(addr - 0x2000)
     }
 
     fn write_echo(&mut self, addr: u16, value: u8) {
+        self.write_wram(addr - 0x2000, value)
     }
 
     fn read_oam(&self, addr: u16) -> u8 {
-        0
+        let offset = (addr - 0xFE00) as usize;
+        self.memory.oam[offset]
     }
 
     fn write_oam(&mut self, addr: u16, value: u8) {
+        let offset = (addr - 0xFE00) as usize;
+        self.memory.oam[offset] = value;
     }
 
     fn read_hram(&self, addr: u16) -> u8 {
-        0
+        let offset = addr - 0xFF80;
+        self.memory.hram[offset as usize]
     }
 
     fn write_hram(&mut self, addr: u16, value: u8) {
+        let offset = addr - 0xFF80;
+        self.memory.hram[offset as usize] = value;
     }
 }

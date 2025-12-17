@@ -57,8 +57,8 @@ impl Tui {
         Self {
             terminal,
             views: vec![
+                Box::new(DebugView::new()),
                 Box::new(ShellView::new()),
-                Box::new(DebugView::new())
             ],
             active: 0,
             emulator_mode: EmulatorMode::Step,

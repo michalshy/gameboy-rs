@@ -33,7 +33,7 @@ Implemented features
 - **CPU Decoder**: Complete opcode table (256 main opcodes + 256 CB-prefixed) with cycle counts.
 - **MMU**: Memory management with separate regions (ROM, VRAM, WRAM, HRAM, OAM, cartridge RAM).
 - **Cartridge System**: Automatic MBC detection; supports NoMBC, MBC1, MBC2, MBC3, MBC5.
-- **TUI Commands**: Shell interface with ROM loading (`load-rom <path>`) and emulator reset.
+- **TUI Commands**: Shell interface with ROM loading (`load <path>`) and emulator reset.
 - **Emulator Core**: CPU step-cycle integration with MMU; tick-based synchronization.
 
 Quick start

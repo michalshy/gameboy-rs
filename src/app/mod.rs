@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, time::Instant};
 
 pub mod tui;
 pub mod command;
@@ -9,6 +9,7 @@ pub fn run() {
 
     let mut tui = Tui::new();
     let mut emulator = Emulator::new();
+    let mut last_draw = Instant::now();
 
     handle_arguments(&mut emulator);
 
