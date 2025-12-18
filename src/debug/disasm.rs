@@ -1,5 +1,5 @@
 use crate::cpu::decoder::Opcode;
-use crate::cpu::decoder::{R8, R16, CC};
+use crate::cpu::decoder::{CC, R8, R16};
 
 impl R8 {
     fn name(&self) -> &'static str {
@@ -46,34 +46,20 @@ pub fn disassemble(opcode: &Opcode) -> String {
         Opcode::Stop => "STOP".into(),
         Opcode::Halt => "HALT".into(),
         Opcode::Prefix => "PREFIX CB".into(),
-        Opcode::LdR8R8(dst, src) =>
-            format!("LD {},{}", dst.name(), src.name()),
-        Opcode::LdR8N8(r) =>
-            format!("LD {},n", r.name()),
-        Opcode::LdR16N16(r) =>
-            format!("LD {},nn", r.name()),
-        Opcode::LdPtrR16A(r) =>
-            format!("LD ({}),A", r.name()),
-        Opcode::LdPtrN16A =>
-            "LD (nn),A".into(),
-        Opcode::LdAPtrR16(r) =>
-            format!("LD A,({})", r.name()),
-        Opcode::LdAPtrN16 =>
-            "LD A,(nn)".into(),
-        Opcode::LdHAPtrC =>
-            "LD A,(0xFF00+C)".into(),
-        Opcode::LDHAPtrN8 =>
-            "LD A,(0xFF00+n)".into(),
-        Opcode::LDHPtrN8A =>
-            "LD (0xFF00+n),A".into(),
-        Opcode::LdPtrHLIncA =>
-            "LD (HL+),A".into(),
-        Opcode::LdPtrHLDecA =>
-            "LD (HL-),A".into(),
-        Opcode::LdAPtrHLInc =>
-            "LD A,(HL+)".into(),
-        Opcode::LdAPtrHLDec =>
-            "LD A,(HL-)".into(),
+        Opcode::LdR8R8(dst, src) => format!("LD {},{}", dst.name(), src.name()),
+        Opcode::LdR8N8(r) => format!("LD {},n", r.name()),
+        Opcode::LdR16N16(r) => format!("LD {},nn", r.name()),
+        Opcode::LdPtrR16A(r) => format!("LD ({}),A", r.name()),
+        Opcode::LdPtrN16A => "LD (nn),A".into(),
+        Opcode::LdAPtrR16(r) => format!("LD A,({})", r.name()),
+        Opcode::LdAPtrN16 => "LD A,(nn)".into(),
+        Opcode::LdHAPtrC => "LD A,(0xFF00+C)".into(),
+        Opcode::LDHAPtrN8 => "LD A,(0xFF00+n)".into(),
+        Opcode::LDHPtrN8A => "LD (0xFF00+n),A".into(),
+        Opcode::LdPtrHLIncA => "LD (HL+),A".into(),
+        Opcode::LdPtrHLDecA => "LD (HL-),A".into(),
+        Opcode::LdAPtrHLInc => "LD A,(HL+)".into(),
+        Opcode::LdAPtrHLDec => "LD A,(HL-)".into(),
         Opcode::AddAR8(r) => format!("ADD A,{}", r.name()),
         Opcode::AddAN8 => "ADD A,n".into(),
         Opcode::AdcAR8(r) => format!("ADC A,{}", r.name()),

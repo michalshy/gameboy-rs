@@ -1,22 +1,22 @@
-
 use crossterm::event::{KeyCode, KeyEvent};
-use ratatui::{Frame, layout::Rect, style::{Color, Modifier, Style}, text::{Line, Span}, widgets::{Block, Paragraph}};
+use ratatui::{
+    Frame,
+    layout::Rect,
+    style::{Color, Modifier, Style},
+    text::{Line, Span},
+    widgets::{Block, Paragraph},
+};
 
-use crate::{app::tui::{debug::Widget}, emulator::Emulator};
+use crate::{app::tui::debug::Widget, emulator::Emulator};
 
 pub struct MemoryWidget {
-    pub start_addr: u16,   // first visible address
+    pub start_addr: u16, // first visible address
     pub bytes_per_row: u16,
     pub rows: u16,
 }
 
 impl Widget for MemoryWidget {
-    fn draw_in(
-        &mut self,
-        frame: &mut Frame,
-        area: Rect,
-        emulator: &Emulator,
-    ) {
+    fn draw_in(&mut self, frame: &mut Frame, area: Rect, emulator: &Emulator) {
         let mmu = &emulator.mmu;
         let pc = emulator.cpu.registers.pc;
 
@@ -38,8 +38,7 @@ impl Widget for MemoryWidget {
                 spans.push(if a == pc {
                     Span::styled(
                         format!("{:02X} ", v),
-                        Style::default()
-                            .add_modifier(Modifier::REVERSED),
+                        Style::default().add_modifier(Modifier::REVERSED),
                     )
                 } else {
                     Span::raw(format!("{:02X} ", v))
@@ -50,17 +49,12 @@ impl Widget for MemoryWidget {
             addr = addr.wrapping_add(self.bytes_per_row);
         }
 
-        let widget = Paragraph::new(lines)
-            .block(Block::default());
+        let widget = Paragraph::new(lines).block(Block::default());
 
         frame.render_widget(widget, area);
     }
 
-    fn handle_key(
-        &mut self,
-        key: KeyEvent,
-        _emulator: &mut Emulator,
-    ) -> bool {
+    fn handle_key(&mut self, key: KeyEvent, _emulator: &mut Emulator) -> bool {
         match key.code {
             KeyCode::Up => self.scroll(-1),
             KeyCode::Down => self.scroll(1),

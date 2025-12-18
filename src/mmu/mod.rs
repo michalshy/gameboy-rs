@@ -1,11 +1,14 @@
-pub mod memory;
-pub mod mbc;
 pub mod cartridge;
+pub mod mbc;
+pub mod memory;
 use std::io::Error;
 
-use crate::{apu::Apu, interrupts::InterruptController, joypad::Joypad, ppu::Ppu, serial::SerialPort, timer::Timer};
-use memory::Memory;
+use crate::{
+    apu::Apu, interrupts::InterruptController, joypad::Joypad, ppu::Ppu, serial::SerialPort,
+    timer::Timer,
+};
 use cartridge::Cartridge;
+use memory::Memory;
 
 // Game Boy Memory Map
 //
@@ -38,7 +41,7 @@ pub struct Mmu {
     pub joypad: Joypad,
     pub interrupts: InterruptController,
     pub serial: SerialPort,
-    pub apu: Apu
+    pub apu: Apu,
 }
 
 #[allow(clippy::too_many_arguments)] // TODO: reconsider
@@ -66,29 +69,29 @@ impl Mmu {
     }
 
     pub fn read_8(&self, addr: u16) -> u8 {
-    match addr {
-        0x0000..=0x7FFF => self.read_rom(addr),
-        0x8000..=0x9FFF => self.read_vram(addr),
-        0xA000..=0xBFFF => self.read_cartridge_ram(addr),
-        0xC000..=0xDFFF => self.read_wram(addr),
-        0xE000..=0xFDFF => self.read_echo(addr),
-        0xFE00..=0xFE9F => self.read_oam(addr),
-        0xFF00 => self.joypad.read_reg(),
-        0xFF01..=0xFF02 => self.serial.read_reg(addr),
-        0xFF04..=0xFF07 => self.timer.read_reg(addr),
-        0xFF0F => self.interrupts._if,
-        0xFF10..=0xFF3F => self.apu.read_reg(addr),
-        0xFF40..=0xFF4B => self.ppu.read_reg(addr),
-        0xFF80..=0xFFFE => self.read_hram(addr),
-        0xFFFF => self.interrupts.ie,
-        _ => 0xFF,
+        match addr {
+            0x0000..=0x7FFF => self.read_rom(addr),
+            0x8000..=0x9FFF => self.read_vram(addr),
+            0xA000..=0xBFFF => self.read_cartridge_ram(addr),
+            0xC000..=0xDFFF => self.read_wram(addr),
+            0xE000..=0xFDFF => self.read_echo(addr),
+            0xFE00..=0xFE9F => self.read_oam(addr),
+            0xFF00 => self.joypad.read_reg(),
+            0xFF01..=0xFF02 => self.serial.read_reg(addr),
+            0xFF04..=0xFF07 => self.timer.read_reg(addr),
+            0xFF0F => self.interrupts._if,
+            0xFF10..=0xFF3F => self.apu.read_reg(addr),
+            0xFF40..=0xFF4B => self.ppu.read_reg(addr),
+            0xFF80..=0xFFFE => self.read_hram(addr),
+            0xFFFF => self.interrupts.ie,
+            _ => 0xFF,
         }
     }
 
     pub fn write_8(&mut self, addr: u16, value: u8) {
         match addr {
             0x0000..=0x7FFF => self.write_rom(addr, value),
-            0x8000..=0x9FFF  => self.write_vram(addr, value),
+            0x8000..=0x9FFF => self.write_vram(addr, value),
             0xA000..=0xBFFF => self.write_cartridge_ram(addr, value),
             0xC000..=0xDFFF => self.write_wram(addr, value),
             0xE000..=0xFDFF => self.write_echo(addr, value),
@@ -102,7 +105,9 @@ impl Mmu {
             0xFF40..=0xFF4B => self.ppu.write_reg(addr, value),
             0xFF80..=0xFFFE => self.write_hram(addr, value),
             0xFFFF => self.interrupts.ie = value,
-            _ => { panic!("Memory access violation!"); }
+            _ => {
+                panic!("Memory access violation!");
+            }
         }
     }
 
@@ -123,7 +128,7 @@ impl Mmu {
         // TODO:
     }
 
-    pub fn load_rom(&mut self, path: &str) -> Result<(),Error> {
+    pub fn load_rom(&mut self, path: &str) -> Result<(), Error> {
         let cartridge = Cartridge::new(path)?;
         self.cartridge = Some(cartridge);
         Ok(())

@@ -1,8 +1,8 @@
-use crate::cpu::decoder::{CC, Opcode, OpcodeEntry, R8, R16};
 use crate::cpu::Cpu;
-use crate::cpu::registers::Flags;
-use crate::mmu::{Mmu, HIGH_RAM};
 use crate::cpu::decoder::decode_cb;
+use crate::cpu::decoder::{CC, Opcode, OpcodeEntry, R8, R16};
+use crate::cpu::registers::Flags;
+use crate::mmu::{HIGH_RAM, Mmu};
 
 impl Cpu {
     fn increment_pc(&mut self, v: u16) {
@@ -88,9 +88,9 @@ impl Cpu {
     fn condition_met(&self, cc: &CC) -> bool {
         match cc {
             CC::NZ => self.registers.get_flag(Flags::Z) == 0,
-            CC::Z  => self.registers.get_flag(Flags::Z) != 0,
+            CC::Z => self.registers.get_flag(Flags::Z) != 0,
             CC::NC => self.registers.get_flag(Flags::C) == 0,
-            CC::C  => self.registers.get_flag(Flags::C) != 0,
+            CC::C => self.registers.get_flag(Flags::C) != 0,
         }
     }
 
@@ -100,23 +100,23 @@ impl Cpu {
             Opcode::LdR8R8(reg, vreg) => {
                 let value = self.read_r8(vreg, mmu);
                 self.write_r8(reg, value, mmu);
-            },
+            }
             Opcode::LdR8N8(reg) => {
                 let value = mmu.read_8(self.registers.pc + 1);
                 self.write_r8(reg, value, mmu);
-            },
+            }
             Opcode::LdR16N16(reg) => {
                 let value = mmu.read_16(self.registers.pc + 1);
                 self.write_r16(reg, value);
-            },
+            }
             Opcode::LdPtrR16A(reg) => {
                 let addr = self.read_r16(reg);
                 mmu.write_8(addr, self.registers.a);
-            },
+            }
             Opcode::LdPtrN16A => {
                 let addr = mmu.read_16(self.registers.pc + 1);
                 mmu.write_8(addr, self.registers.a);
-            },
+            }
             Opcode::LdHPtrCA => {
                 let addr = HIGH_RAM | self.registers.c as u16;
                 mmu.write_8(addr, self.registers.a);
@@ -124,60 +124,80 @@ impl Cpu {
             Opcode::LdAPtrR16(reg) => {
                 let addr = self.read_r16(reg);
                 self.registers.a = mmu.read_8(addr)
-            },
+            }
             Opcode::LdAPtrN16 => {
-                self.registers.a = mmu.read_8(mmu.read_16(self.registers.pc + 1)); 
-            },
+                self.registers.a = mmu.read_8(mmu.read_16(self.registers.pc + 1));
+            }
             Opcode::LdHAPtrC => {
                 let addr = HIGH_RAM | self.registers.c as u16;
                 self.registers.a = mmu.read_8(addr);
-            },
+            }
             Opcode::LDHAPtrN8 => {
                 let addr = HIGH_RAM | mmu.read_8(self.registers.pc + 1) as u16;
                 self.registers.a = mmu.read_8(addr);
-            },
+            }
             Opcode::LDHPtrN8A => {
                 let addr = HIGH_RAM | mmu.read_8(self.registers.pc + 1) as u16;
                 mmu.write_8(addr, self.registers.a);
-            },
+            }
             Opcode::LdPtrHLIncA => {
                 let addr = self.registers.hl();
                 mmu.write_8(addr, self.registers.a);
                 self.registers.set_hl(self.registers.hl() + 1);
-            },
+            }
             Opcode::LdPtrHLDecA => {
                 let addr = self.registers.hl();
                 mmu.write_8(addr, self.registers.a);
                 self.registers.set_hl(self.registers.hl() - 1);
-            },
+            }
             Opcode::LdAPtrHLDec => {
                 let addr = self.registers.hl();
                 self.registers.a = mmu.read_8(addr);
                 self.registers.set_hl(self.registers.hl() - 1);
-            },
+            }
             Opcode::LdAPtrHLInc => {
                 let addr = self.registers.hl();
                 self.registers.a = mmu.read_8(addr);
                 self.registers.set_hl(self.registers.hl() + 1);
-            },
+            }
             Opcode::AdcAR8(reg) => {
                 let value = self.read_r8(reg, mmu);
-                let result = self.registers.a.wrapping_add(value).wrapping_add(self.registers.get_flag(Flags::C));
+                let result = self
+                    .registers
+                    .a
+                    .wrapping_add(value)
+                    .wrapping_add(self.registers.get_flag(Flags::C));
                 let z = result == 0;
-                let h = ((self.registers.a & 0x0F) + (value & 0x0F) + self.registers.get_flag(Flags::C)) > 0x0F;
-                let c = (self.registers.a as u16 + value as u16 + self.registers.get_flag(Flags::C) as u16) > 0xFF;
+                let h = ((self.registers.a & 0x0F)
+                    + (value & 0x0F)
+                    + self.registers.get_flag(Flags::C))
+                    > 0x0F;
+                let c = (self.registers.a as u16
+                    + value as u16
+                    + self.registers.get_flag(Flags::C) as u16)
+                    > 0xFF;
                 self.registers.a = result;
                 self.registers.set_flags(z, false, h, c);
-            },
+            }
             Opcode::AdcAN8 => {
                 let value = mmu.read_8(self.registers.pc + 1);
-                let result = self.registers.a.wrapping_add(value).wrapping_add(self.registers.get_flag(Flags::C));
+                let result = self
+                    .registers
+                    .a
+                    .wrapping_add(value)
+                    .wrapping_add(self.registers.get_flag(Flags::C));
                 let z = result == 0;
-                let h = ((self.registers.a & 0x0F) + (value & 0x0F) + self.registers.get_flag(Flags::C)) > 0x0F;
-                let c = (self.registers.a as u16 + value as u16 + self.registers.get_flag(Flags::C) as u16) > 0xFF;
+                let h = ((self.registers.a & 0x0F)
+                    + (value & 0x0F)
+                    + self.registers.get_flag(Flags::C))
+                    > 0x0F;
+                let c = (self.registers.a as u16
+                    + value as u16
+                    + self.registers.get_flag(Flags::C) as u16)
+                    > 0xFF;
                 self.registers.a = result;
                 self.registers.set_flags(z, false, h, c);
-            },
+            }
             Opcode::AddAR8(reg) => {
                 let value = self.read_r8(reg, mmu);
                 let result = self.registers.a.wrapping_add(value);
@@ -186,7 +206,7 @@ impl Cpu {
                 let c = (self.registers.a as u16 + value as u16) > 0xFF;
                 self.registers.a = result;
                 self.registers.set_flags(z, false, h, c);
-            },
+            }
             Opcode::AddAN8 => {
                 let value = mmu.read_8(self.registers.pc + 1);
                 let result = self.registers.a.wrapping_add(value);
@@ -195,8 +215,7 @@ impl Cpu {
                 let c = (self.registers.a as u16 + value as u16) > 0xFF;
                 self.registers.a = result;
                 self.registers.set_flags(z, false, h, c);
-            
-            },
+            }
             Opcode::CpAR8(reg) => {
                 let value = self.read_r8(reg, mmu);
                 let result = self.registers.a.wrapping_sub(value);
@@ -204,7 +223,7 @@ impl Cpu {
                 let h = (value & 0x0F) > (self.registers.a & 0x0F);
                 let c = value > self.registers.a;
                 self.registers.set_flags(z, true, h, c);
-            },
+            }
             Opcode::CpAN8 => {
                 let value = mmu.read_8(self.registers.pc + 1);
                 let result = self.registers.a.wrapping_sub(value);
@@ -212,7 +231,7 @@ impl Cpu {
                 let h = (value & 0x0F) > (self.registers.a & 0x0F);
                 let c = value > self.registers.a;
                 self.registers.set_flags(z, true, h, c);
-            },
+            }
             Opcode::DecR8(reg) => {
                 let old = self.read_r8(reg, mmu);
                 let result = old.wrapping_sub(1);
@@ -221,7 +240,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, result == 0);
                 self.registers.set_flag(Flags::N, true);
                 self.registers.set_flag(Flags::H, (old & 0x0F) == 0);
-            },
+            }
             Opcode::IncR8(reg) => {
                 let old = self.read_r8(reg, mmu);
                 let result = old.wrapping_add(1);
@@ -230,25 +249,37 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, result == 0);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, (old & 0x0F) == 0x0F);
-            },
+            }
             Opcode::SbcAR8(reg) => {
                 let value = self.read_r8(reg, mmu);
-                let result = self.registers.a.wrapping_sub(value).wrapping_sub(self.registers.get_flag(Flags::C));
+                let result = self
+                    .registers
+                    .a
+                    .wrapping_sub(value)
+                    .wrapping_sub(self.registers.get_flag(Flags::C));
                 let z = result == 0;
-                let h = self.registers.a & 0x0F < ((value & 0x0F) + self.registers.get_flag(Flags::C));
-                let c = (self.registers.a as u16) < (value as u16 + self.registers.get_flag(Flags::C) as u16);
+                let h =
+                    self.registers.a & 0x0F < ((value & 0x0F) + self.registers.get_flag(Flags::C));
+                let c = (self.registers.a as u16)
+                    < (value as u16 + self.registers.get_flag(Flags::C) as u16);
                 self.registers.a = result;
                 self.registers.set_flags(z, true, h, c);
-            },
+            }
             Opcode::SbcAN8 => {
                 let value = mmu.read_8(self.registers.pc + 1);
-                let result = self.registers.a.wrapping_sub(value).wrapping_sub(self.registers.get_flag(Flags::C));
+                let result = self
+                    .registers
+                    .a
+                    .wrapping_sub(value)
+                    .wrapping_sub(self.registers.get_flag(Flags::C));
                 let z = result == 0;
-                let h = self.registers.a & 0x0F < ((value & 0x0F) + self.registers.get_flag(Flags::C));
-                let c = (self.registers.a as u16) < (value as u16 + self.registers.get_flag(Flags::C) as u16);
+                let h =
+                    self.registers.a & 0x0F < ((value & 0x0F) + self.registers.get_flag(Flags::C));
+                let c = (self.registers.a as u16)
+                    < (value as u16 + self.registers.get_flag(Flags::C) as u16);
                 self.registers.a = result;
                 self.registers.set_flags(z, true, h, c);
-            },
+            }
             Opcode::SubAR8(reg) => {
                 let value = self.read_r8(reg, mmu);
                 let result = self.registers.a.wrapping_sub(value);
@@ -257,7 +288,7 @@ impl Cpu {
                 let c = (self.registers.a as u16) < (value as u16);
                 self.registers.a = result;
                 self.registers.set_flags(z, true, h, c);
-            },
+            }
             Opcode::SubAN8 => {
                 let value = mmu.read_8(self.registers.pc + 1);
                 let result = self.registers.a.wrapping_sub(value);
@@ -266,97 +297,76 @@ impl Cpu {
                 let c = (self.registers.a as u16) < (value as u16);
                 self.registers.a = result;
                 self.registers.set_flags(z, true, h, c);
-            },
+            }
             Opcode::AddHLR16(reg) => {
                 let hl = self.registers.hl();
                 let value = self.read_r16(reg);
-                self.registers.set_flag(Flags::H, (hl & 0x0FFF) + (value & 0x0FFF) > 0x0FFF);
+                self.registers
+                    .set_flag(Flags::H, (hl & 0x0FFF) + (value & 0x0FFF) > 0x0FFF);
                 self.registers.set_flag(Flags::N, false);
-                self.registers.set_flag(Flags::C, hl as u32 + value as u32 > 0x0000FFFF);
+                self.registers
+                    .set_flag(Flags::C, hl as u32 + value as u32 > 0x0000FFFF);
                 self.registers.set_hl(hl.wrapping_add(value));
-            },
+            }
             Opcode::DecR16(reg) => {
                 let value = self.read_r16(reg);
                 self.write_r16(reg, value.wrapping_sub(1));
-            },
+            }
             Opcode::IncR16(reg) => {
                 let value = self.read_r16(reg);
                 self.write_r16(reg, value.wrapping_add(1));
-            },
+            }
             Opcode::AndAR8(reg) => {
                 self.registers.a &= self.read_r8(reg, mmu);
-                self.registers.set_flags(
-                    self.registers.a == 0, 
-                    false, 
-                    true, 
-                    false
-                );
-            },
+                self.registers
+                    .set_flags(self.registers.a == 0, false, true, false);
+            }
             Opcode::AndAN8 => {
                 self.registers.a &= mmu.read_8(self.registers.pc + 1);
-                self.registers.set_flags(
-                    self.registers.a == 0, 
-                    false, 
-                    true, 
-                    false
-                );
-            },
+                self.registers
+                    .set_flags(self.registers.a == 0, false, true, false);
+            }
             Opcode::Cpl => {
                 self.registers.a = !self.registers.a;
                 self.registers.set_flag(Flags::N, true);
                 self.registers.set_flag(Flags::H, true);
-            },
+            }
             Opcode::OrAR8(reg) => {
                 self.registers.a |= self.read_r8(reg, mmu);
-                self.registers.set_flags(
-                    self.registers.a == 0, 
-                    false, 
-                    false, 
-                    false
-                );
-            },
+                self.registers
+                    .set_flags(self.registers.a == 0, false, false, false);
+            }
             Opcode::OrAN8 => {
                 self.registers.a |= mmu.read_8(self.registers.pc + 1);
-                self.registers.set_flags(
-                    self.registers.a == 0, 
-                    false, 
-                    false, 
-                    false
-                );
-            },
+                self.registers
+                    .set_flags(self.registers.a == 0, false, false, false);
+            }
             Opcode::XorAR8(reg) => {
                 self.registers.a ^= self.read_r8(reg, mmu);
-                self.registers.set_flags(
-                    self.registers.a == 0, 
-                    false, 
-                    false, 
-                    false
-                );
-            },
+                self.registers
+                    .set_flags(self.registers.a == 0, false, false, false);
+            }
             Opcode::XorAN8 => {
                 self.registers.a ^= mmu.read_8(self.registers.pc + 1);
-                self.registers.set_flags(
-                    self.registers.a == 0, 
-                    false, 
-                    false, 
-                    false
-                );
-            },
+                self.registers
+                    .set_flags(self.registers.a == 0, false, false, false);
+            }
             Opcode::Bit(n, reg) => {
-                self.registers.set_flag(Flags::Z, ((self.read_r8(reg, mmu) >> n) & 1) == 0);
+                self.registers
+                    .set_flag(Flags::Z, ((self.read_r8(reg, mmu) >> n) & 1) == 0);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, true);
-            },
+            }
             Opcode::Set(n, reg) => {
                 let value = self.read_r8(reg, mmu);
                 let result = value | (1 << n);
                 self.write_r8(reg, result, mmu);
-            },
+            }
             Opcode::Res(n, reg) => {
                 let value = self.read_r8(reg, mmu);
                 let result = value & !(1 << n);
                 self.write_r8(reg, result, mmu);
-            },
+            }
             Opcode::RlR8(reg) => {
                 let val = self.read_r8(reg, mmu);
                 let old_carry = self.registers.get_flag(Flags::C);
@@ -368,7 +378,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, result == 0);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
-            },
+            }
             Opcode::RlA => {
                 let a = self.registers.a;
                 let old_carry = self.registers.get_flag(Flags::C);
@@ -378,7 +388,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, false);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
-            },
+            }
             Opcode::RlcR8(reg) => {
                 let val = self.read_r8(reg, mmu);
 
@@ -389,7 +399,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, result == 0);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
-            },
+            }
             Opcode::RlcA => {
                 let a = self.registers.a;
 
@@ -398,7 +408,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, false);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
-            },
+            }
             Opcode::RrR8(reg) => {
                 let val = self.read_r8(reg, mmu);
                 let old_carry = self.registers.get_flag(Flags::C);
@@ -410,7 +420,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, result == 0);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
-            },
+            }
             Opcode::RrA => {
                 let a = self.registers.a;
                 let old_carry = self.registers.get_flag(Flags::C);
@@ -420,7 +430,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, false);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
-            },
+            }
             Opcode::RrcR8(reg) => {
                 let val = self.read_r8(reg, mmu);
 
@@ -431,7 +441,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, result == 0);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
-            },
+            }
             Opcode::RrcA => {
                 let a = self.registers.a;
 
@@ -440,7 +450,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, false);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
-            },
+            }
             Opcode::SlaR8(reg) => {
                 let val = self.read_r8(reg, mmu);
                 self.registers.set_flag(Flags::C, (val & 0x80) != 0);
@@ -450,7 +460,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, result == 0);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
-            },
+            }
             Opcode::SraR8(reg) => {
                 let val = self.read_r8(reg, mmu);
                 self.registers.set_flag(Flags::C, (val & 0x01) != 0);
@@ -460,7 +470,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, result == 0);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
-            },
+            }
             Opcode::SrlR8(reg) => {
                 let val = self.read_r8(reg, mmu);
                 self.registers.set_flag(Flags::C, (val & 0x01) != 0);
@@ -470,22 +480,17 @@ impl Cpu {
                 self.registers.set_flag(Flags::Z, result == 0);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
-            },
+            }
             Opcode::SwapR8(reg) => {
                 let val = self.read_r8(reg, mmu);
                 let result = val.rotate_left(4);
                 self.write_r8(reg, result, mmu);
-                self.registers.set_flags(
-                    result == 0, 
-                    false, 
-                    false, 
-                    false
-                );
-            },
+                self.registers.set_flags(result == 0, false, false, false);
+            }
             Opcode::CallN16 => {
                 let target = mmu.read_16(self.registers.pc + 1);
                 let ret = self.registers.pc + 3;
-                // pushes instruction after to the stack 
+                // pushes instruction after to the stack
                 self.push_u16(mmu, ret);
                 // jp n16
                 self.registers.pc = target;
@@ -501,27 +506,27 @@ impl Cpu {
                     self.registers.pc = target;
                     increment = false;
                 }
-            },
+            }
             Opcode::JpHL => {
                 self.registers.pc = self.registers.hl();
-            },
+            }
             Opcode::JpN16 => {
                 self.registers.pc = mmu.read_16(self.registers.pc.wrapping_add(1));
                 increment = false;
-            },
+            }
             Opcode::JpCCN16(cc) => {
                 if self.condition_met(cc) {
                     //TODO: CYCLES
                     self.registers.pc = mmu.read_16(self.registers.pc.wrapping_add(1));
                     increment = false;
                 }
-            },
+            }
             Opcode::JrE8 => {
                 let offset = mmu.read_8(self.registers.pc + 1) as i8;
                 let pc = self.registers.pc.wrapping_add(2);
                 self.registers.pc = ((pc as i32) + (offset as i32)) as u16;
                 increment = false;
-            },
+            }
             Opcode::JrCCE8(cc) => {
                 if self.condition_met(cc) {
                     let offset = mmu.read_8(self.registers.pc + 1) as i8;
@@ -529,46 +534,49 @@ impl Cpu {
                     self.registers.pc = ((pc as i32) + (offset as i32)) as u16;
                     increment = false;
                 }
-            },
+            }
             Opcode::Ret => {
                 self.registers.pc = self.pop_u16(mmu);
                 increment = false;
-            },
+            }
             Opcode::RetCC(cc) => {
                 if self.condition_met(cc) {
                     self.registers.pc = self.pop_u16(mmu);
                     increment = false;
                 }
-            },
+            }
             Opcode::RetI => {
                 self.int.ime = true;
                 self.registers.pc = self.pop_u16(mmu);
                 increment = false;
-            },
+            }
             Opcode::Rst(vec) => {
                 let ret = self.registers.pc + entry.length as u16;
                 self.push_u16(mmu, ret);
                 self.registers.pc = *vec as u16;
                 increment = false;
-            },
+            }
             Opcode::Scf => {
                 self.registers.set_flag(Flags::H, false);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::C, true);
-            },
+            }
             Opcode::Ccf => {
                 self.registers.set_flag(Flags::H, false);
                 self.registers.set_flag(Flags::N, false);
-                self.registers.set_flag(Flags::C, self.registers.get_flag(Flags::C) == 0);
-            },
+                self.registers
+                    .set_flag(Flags::C, self.registers.get_flag(Flags::C) == 0);
+            }
             Opcode::AddHLSP => {
                 let hl = self.registers.hl();
                 let value = self.registers.sp;
-                self.registers.set_flag(Flags::H, (hl & 0x0FFF) + (value & 0x0FFF) > 0x0FFF);
+                self.registers
+                    .set_flag(Flags::H, (hl & 0x0FFF) + (value & 0x0FFF) > 0x0FFF);
                 self.registers.set_flag(Flags::N, false);
-                self.registers.set_flag(Flags::C, hl as u32 + value as u32 > 0x0000FFFF);
+                self.registers
+                    .set_flag(Flags::C, hl as u32 + value as u32 > 0x0000FFFF);
                 self.registers.set_hl(hl.wrapping_add(value));
-            },
+            }
             Opcode::AddSPe8 => {
                 let offset = mmu.read_8(self.registers.pc + 1) as i8;
                 let sp = self.registers.sp;
@@ -577,14 +585,10 @@ impl Cpu {
 
                 self.registers.set_flag(Flags::Z, false);
                 self.registers.set_flag(Flags::N, false);
-                self.registers.set_flag(
-                    Flags::H,
-                    ((sp & 0x000F) + (unsigned & 0x000F)) > 0x000F
-                );
-                self.registers.set_flag(
-                    Flags::C,
-                    ((sp & 0x00FF) + (unsigned & 0x00FF)) > 0x00FF
-                );
+                self.registers
+                    .set_flag(Flags::H, ((sp & 0x000F) + (unsigned & 0x000F)) > 0x000F);
+                self.registers
+                    .set_flag(Flags::C, ((sp & 0x00FF) + (unsigned & 0x00FF)) > 0x00FF);
 
                 self.registers.sp = sp.wrapping_add(unsigned);
             }
@@ -596,77 +600,69 @@ impl Cpu {
 
                 self.registers.set_flag(Flags::Z, false);
                 self.registers.set_flag(Flags::N, false);
-                self.registers.set_flag(
-                    Flags::H,
-                    ((sp & 0x000F) + (unsigned & 0x000F)) > 0x000F
-                );
-                self.registers.set_flag(
-                    Flags::C,
-                    ((sp & 0x00FF) + (unsigned & 0x00FF)) > 0x00FF
-                );
+                self.registers
+                    .set_flag(Flags::H, ((sp & 0x000F) + (unsigned & 0x000F)) > 0x000F);
+                self.registers
+                    .set_flag(Flags::C, ((sp & 0x00FF) + (unsigned & 0x00FF)) > 0x00FF);
 
                 let result = (sp as i32) + (offset as i32);
                 self.registers.set_hl(result as u16);
-            },
+            }
             Opcode::DecSP => {
                 self.registers.sp = self.registers.sp.wrapping_sub(1);
-            },
+            }
             Opcode::IncSP => {
                 self.registers.sp = self.registers.sp.wrapping_add(1);
-            },
+            }
             Opcode::LdSPN16 => {
                 self.registers.sp = mmu.read_16(self.registers.pc + 1);
-            },
+            }
             Opcode::LdPtrN16SP => {
                 let addr = mmu.read_16(self.registers.pc + 1);
                 mmu.write_8(addr, (self.registers.sp & 0x00FF) as u8);
                 mmu.write_8(addr + 1, (self.registers.sp >> 8) as u8);
-            },
+            }
             Opcode::LdSPHL => {
                 self.registers.sp = self.registers.hl();
-            },
+            }
             Opcode::PopAF => {
                 self.registers.f = self.pop_u8(mmu) & 0xF0; // mask low 4 bits
                 self.registers.a = self.pop_u8(mmu);
-            },
+            }
             Opcode::PopR16(reg) => {
                 let value = self.pop_u16(mmu);
                 self.write_r16(reg, value);
-            },
+            }
             Opcode::PushAF => {
                 self.push_u16(mmu, self.registers.af());
-            },
+            }
             Opcode::PushR16(reg) => {
                 let value = self.read_r16(reg);
                 self.push_u16(mmu, value);
-            },
+            }
             Opcode::Di => {
                 self.int.ime = false;
-            },
+            }
             Opcode::Ei => {
                 self.int.ime_scheduled = true;
-            },
+            }
             Opcode::Halt => {
                 // TODO: calls to interrupt controller
-            },
-            Opcode::Daa => {
-
-            },
+            }
+            Opcode::Daa => {}
             Opcode::Nop => {
                 // Nothing
-            },
-            Opcode::Stop => {
-
-            },
+            }
+            Opcode::Stop => {}
             Opcode::Undefined => {
                 // Undefined
-            },
+            }
             Opcode::Prefix => {
                 increment = false;
                 let opcode_byte = mmu.read_8(self.registers.pc.wrapping_add(1));
                 let entry = decode_cb(opcode_byte);
                 self.execute_instruction(entry, mmu);
-            },
+            }
         }
         if increment {
             self.increment_pc(entry.length as u16);

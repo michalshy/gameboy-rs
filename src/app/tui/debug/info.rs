@@ -1,15 +1,14 @@
-use ratatui::{Frame, layout::{Constraint, Direction, Layout, Rect}, widgets::{Block, Borders, Paragraph}};
-use crate::{app::tui::{debug::Widget}, debug::disasm::disassemble, emulator::Emulator};
+use crate::{app::tui::debug::Widget, debug::disasm::disassemble, emulator::Emulator};
+use ratatui::{
+    Frame,
+    layout::{Constraint, Direction, Layout, Rect},
+    widgets::{Block, Borders, Paragraph},
+};
 
 pub struct InfoView;
 
 impl Widget for InfoView {
-    fn draw_in(
-        &mut self,
-        frame: &mut Frame,
-        area: Rect,
-        emulator: &Emulator,
-    ) {
+    fn draw_in(&mut self, frame: &mut Frame, area: Rect, emulator: &Emulator) {
         let cpu = &emulator.cpu;
         let mmu = &emulator.mmu;
 
@@ -69,26 +68,17 @@ impl Widget for InfoView {
 
         let rows = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Percentage(50),
-                Constraint::Percentage(50),
-            ])
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
             .split(inner);
 
         let row0 = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Percentage(50),
-                Constraint::Percentage(50),
-            ])
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
             .split(rows[0]);
 
         let row1 = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Percentage(50),
-                Constraint::Percentage(50),
-            ])
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
             .split(rows[1]);
 
         frame.render_widget(
@@ -98,8 +88,7 @@ impl Widget for InfoView {
         );
 
         frame.render_widget(
-            Paragraph::new(cpu_info)
-                .block(Block::default().title("CPU").borders(Borders::ALL)),
+            Paragraph::new(cpu_info).block(Block::default().title("CPU").borders(Borders::ALL)),
             row0[1],
         );
 
@@ -116,12 +105,7 @@ impl Widget for InfoView {
         );
     }
 
-
-    fn handle_key(
-            &mut self,
-            _key: crossterm::event::KeyEvent,
-            _emulator: &mut Emulator,
-        ) -> bool {
+    fn handle_key(&mut self, _key: crossterm::event::KeyEvent, _emulator: &mut Emulator) -> bool {
         false
     }
 }

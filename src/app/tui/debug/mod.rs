@@ -1,17 +1,23 @@
+mod history;
 mod info;
 mod mem;
-mod history;
 
+use history::HistoryView;
 use info::InfoView;
 use mem::MemoryWidget;
-use history::HistoryView;
 
 use std::io::Stdout;
 
 use crossterm::event::{KeyCode, KeyEvent};
-use ratatui::{Frame, Terminal, layout::{Constraint, Direction, Layout, Rect}, prelude::CrosstermBackend, style::{Color, Modifier, Style}, widgets::{Block, Borders}};
+use ratatui::{
+    Frame, Terminal,
+    layout::{Constraint, Direction, Layout, Rect},
+    prelude::CrosstermBackend,
+    style::{Color, Modifier, Style},
+    widgets::{Block, Borders},
+};
 
-use crate::{app::tui::{View}, emulator::Emulator};
+use crate::{app::tui::View, emulator::Emulator};
 
 #[derive(PartialEq)]
 enum Focus {
@@ -21,20 +27,10 @@ enum Focus {
 }
 
 pub trait Widget {
-    fn draw_in(
-        &mut self,
-        frame: &mut Frame,
-        area: Rect,
-        emulator: &Emulator,
-    );
+    fn draw_in(&mut self, frame: &mut Frame, area: Rect, emulator: &Emulator);
 
-    fn handle_key(
-        &mut self,
-        key: KeyEvent,
-        _emulator: &mut Emulator,
-    ) -> bool;
+    fn handle_key(&mut self, key: KeyEvent, _emulator: &mut Emulator) -> bool;
 }
-
 
 pub struct DebugView {
     info: InfoView,
@@ -55,11 +51,7 @@ impl DebugView {
 }
 
 impl View for DebugView {
-    fn draw(
-        &mut self,
-        terminal: &mut Terminal<CrosstermBackend<Stdout>>,
-        emulator: &Emulator,
-    ) {
+    fn draw(&mut self, terminal: &mut Terminal<CrosstermBackend<Stdout>>, emulator: &Emulator) {
         let info_style = if self.focus == Focus::Info {
             Style::default()
                 .fg(Color::Yellow)
@@ -99,38 +91,36 @@ impl View for DebugView {
             .borders(Borders::ALL)
             .border_style(history_style);
 
-        terminal.draw(|frame| {
-            let chunks = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([
-                    Constraint::Percentage(40),
-                    Constraint::Percentage(50),
-                    Constraint::Percentage(10),
-                ])
-                .split(frame.size());
+        terminal
+            .draw(|frame| {
+                let chunks = Layout::default()
+                    .direction(Direction::Horizontal)
+                    .constraints([
+                        Constraint::Percentage(40),
+                        Constraint::Percentage(50),
+                        Constraint::Percentage(10),
+                    ])
+                    .split(frame.size());
 
-            // INFO
-            frame.render_widget(info_block.clone(), chunks[0]);
-            let info_inner = info_block.inner(chunks[0]);
-            self.info.draw_in(frame, info_inner, emulator);
+                // INFO
+                frame.render_widget(info_block.clone(), chunks[0]);
+                let info_inner = info_block.inner(chunks[0]);
+                self.info.draw_in(frame, info_inner, emulator);
 
-            // MEMORY
-            frame.render_widget(mem_block.clone(), chunks[1]);
-            let mem_inner = mem_block.inner(chunks[1]);
-            self.memory.draw_in(frame, mem_inner, emulator);
+                // MEMORY
+                frame.render_widget(mem_block.clone(), chunks[1]);
+                let mem_inner = mem_block.inner(chunks[1]);
+                self.memory.draw_in(frame, mem_inner, emulator);
 
-            // HISTORY
-            frame.render_widget(history_block.clone(), chunks[2]);
-            let history_inner = history_block.inner(chunks[2]);
-            self.history.draw_in(frame, history_inner, emulator);
-        }).unwrap();
+                // HISTORY
+                frame.render_widget(history_block.clone(), chunks[2]);
+                let history_inner = history_block.inner(chunks[2]);
+                self.history.draw_in(frame, history_inner, emulator);
+            })
+            .unwrap();
     }
 
-    fn handle_key(
-        &mut self,
-        key: KeyEvent,
-        emulator: &mut Emulator,
-    ) -> bool {
+    fn handle_key(&mut self, key: KeyEvent, emulator: &mut Emulator) -> bool {
         if let KeyCode::Char('f') = key.code {
             self.focus = match self.focus {
                 Focus::Info => Focus::Memory,

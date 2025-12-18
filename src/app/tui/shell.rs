@@ -1,16 +1,13 @@
 use std::env;
 use std::io::Stdout;
 
+use crate::app::command::{Command, LoadRomCommand, ResetCommand};
+use crate::app::tui::View;
+use crate::emulator::Emulator;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::layout::{Constraint, Direction, Layout};
+use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
-use ratatui::{
-    prelude::*,
-};
-use crate::app::command::{Command, LoadRomCommand, ResetCommand};
-use crate::app::tui::{View};
-use crate::emulator::Emulator;
-
 
 pub struct ShellView {
     buffer: String,
@@ -18,58 +15,47 @@ pub struct ShellView {
 }
 
 impl View for ShellView {
-    fn draw(
-        &mut self,
-        terminal: &mut Terminal<CrosstermBackend<Stdout>>,
-        _emulator: &Emulator,
-    ) {
-        terminal.draw(|frame| {
-            let area = frame.size();
+    fn draw(&mut self, terminal: &mut Terminal<CrosstermBackend<Stdout>>, _emulator: &Emulator) {
+        terminal
+            .draw(|frame| {
+                let area = frame.size();
 
-            // Split vertically: header | history | input
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints([
-                    Constraint::Length(2),      // header (cwd + line)
-                    Constraint::Percentage(80), // history
-                    Constraint::Percentage(10), // input
-                ])
-                .split(area);
+                // Split vertically: header | history | input
+                let chunks = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([
+                        Constraint::Length(2),      // header (cwd + line)
+                        Constraint::Percentage(80), // history
+                        Constraint::Percentage(10), // input
+                    ])
+                    .split(area);
 
-            // -------- HEADER --------
-            let cwd = env::current_dir()
-                .map(|p| p.display().to_string())
-                .unwrap_or("<unknown>".into());
+                // -------- HEADER --------
+                let cwd = env::current_dir()
+                    .map(|p| p.display().to_string())
+                    .unwrap_or("<unknown>".into());
 
-            let separator = "─".repeat(area.width as usize);
-            let header_lines = vec![
-                Line::from(cwd),
-                Line::from(separator),
-            ];
+                let separator = "─".repeat(area.width as usize);
+                let header_lines = vec![Line::from(cwd), Line::from(separator)];
 
-            frame.render_widget(Paragraph::new(header_lines), chunks[0]);
+                frame.render_widget(Paragraph::new(header_lines), chunks[0]);
 
-            // -------- HISTORY --------
-            let history_lines: Vec<Line> = self.history
-                .iter()
-                .map(|s| Line::from(s.clone()))
-                .collect();
+                // -------- HISTORY --------
+                let history_lines: Vec<Line> =
+                    self.history.iter().map(|s| Line::from(s.clone())).collect();
 
-            frame.render_widget(Paragraph::new(history_lines), chunks[1]);
+                frame.render_widget(Paragraph::new(history_lines), chunks[1]);
 
-            // -------- INPUT LINE --------
-            let input = Paragraph::new(format!("> {}", self.buffer))
-                .style(Style::default().fg(Color::Yellow));
+                // -------- INPUT LINE --------
+                let input = Paragraph::new(format!("> {}", self.buffer))
+                    .style(Style::default().fg(Color::Yellow));
 
-            frame.render_widget(input, chunks[2]);
-        }).unwrap();
+                frame.render_widget(input, chunks[2]);
+            })
+            .unwrap();
     }
 
-    fn handle_key(
-        &mut self,
-        key: KeyEvent,
-        emulator: &mut Emulator,
-    ) -> bool {
+    fn handle_key(&mut self, key: KeyEvent, emulator: &mut Emulator) -> bool {
         match key.code {
             KeyCode::Char(c) => {
                 self.buffer.push(c);
@@ -88,12 +74,11 @@ impl View for ShellView {
     }
 }
 
-
 impl ShellView {
     pub fn new() -> Self {
-        Self { 
-            buffer: String::new(), 
-            history: vec![] 
+        Self {
+            buffer: String::new(),
+            history: vec![],
         }
     }
 
@@ -103,7 +88,9 @@ impl ShellView {
         self.buffer.clear();
 
         let parts: Vec<&str> = cmd.split_whitespace().collect();
-        if parts.is_empty() { return; }
+        if parts.is_empty() {
+            return;
+        }
 
         match parts[0] {
             "reset" => {
@@ -112,7 +99,7 @@ impl ShellView {
 
             "load" if parts.len() == 2 => {
                 let path = parts[1].to_string();
-                self.history.push(LoadRomCommand{path}.execute(emulator));
+                self.history.push(LoadRomCommand { path }.execute(emulator));
             }
 
             _ => {

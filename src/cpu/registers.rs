@@ -27,17 +27,17 @@ pub struct Registers {
 
 impl Registers {
     pub fn new() -> Self {
-        Registers { 
-            a: 0x01, 
-            f: 0xB0, 
-            b: 0x00, 
-            c: 0x13, 
-            d: 0x00, 
-            e: 0xD8, 
-            h: 0x01, 
-            l: 0x4D, 
-            sp: 0xFFFE, 
-            pc: 0x0100 
+        Registers {
+            a: 0x01,
+            f: 0xB0,
+            b: 0x00,
+            c: 0x13,
+            d: 0x00,
+            e: 0xD8,
+            h: 0x01,
+            l: 0x4D,
+            sp: 0xFFFE,
+            pc: 0x0100,
         }
     }
     pub fn af(&self) -> u16 {
@@ -77,21 +77,30 @@ impl Registers {
     }
     pub fn set_flags(&mut self, z: bool, n: bool, h: bool, c: bool) {
         self.f = 0;
-        if z { self.f |= Flags::Z.bit(); }
-        if n { self.f |= Flags::N.bit(); }
-        if h { self.f |= Flags::H.bit(); }
-        if c { self.f |= Flags::C.bit(); }
+        if z {
+            self.f |= Flags::Z.bit();
+        }
+        if n {
+            self.f |= Flags::N.bit();
+        }
+        if h {
+            self.f |= Flags::H.bit();
+        }
+        if c {
+            self.f |= Flags::C.bit();
+        }
     }
     pub fn get_flag(&self, flag: Flags) -> u8 {
         self.f & flag.bit()
     }
-    pub fn reset(&mut self) { // resets to dmg state
-       self.set_af(0x01B0); 
-       self.set_bc(0x0013); 
-       self.set_de(0x00D8); 
-       self.set_hl(0x014D);
-       self.sp = 0xFFFE;
-       self.pc = 0x0100; 
+    pub fn reset(&mut self) {
+        // resets to dmg state
+        self.set_af(0x01B0);
+        self.set_bc(0x0013);
+        self.set_de(0x00D8);
+        self.set_hl(0x014D);
+        self.sp = 0xFFFE;
+        self.pc = 0x0100;
     }
 }
 #[cfg(test)]
@@ -174,7 +183,7 @@ mod tests {
     #[test]
     fn test_get_flag_clear() {
         let mut registers = Registers::new();
-        registers.set_flags(false, true,false, false);
+        registers.set_flags(false, true, false, false);
         assert_eq!(registers.get_flag(Flags::N), Flags::N.bit());
     }
 
@@ -198,9 +207,9 @@ mod tests {
         registers.l = 0xFF;
         registers.sp = 0x0000;
         registers.pc = 0x0000;
-        
+
         registers.reset();
-        
+
         assert_eq!(registers.af(), 0x01B0);
         assert_eq!(registers.bc(), 0x0013);
         assert_eq!(registers.de(), 0x00D8);

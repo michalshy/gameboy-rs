@@ -1,20 +1,18 @@
+mod debug;
 mod ppu;
 mod shell;
-mod debug;
+use crate::app::tui::debug::DebugView;
+use crate::emulator::Emulator;
 use crossterm::event::KeyEvent;
-use std::io::Stdout;
-use std::time::Duration;
 use crossterm::execute;
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
-    terminal::{enable_raw_mode, disable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
-use ratatui::{
-    prelude::*,
-};
-use crate::app::tui::debug::DebugView;
-use crate::{emulator::Emulator};
+use ratatui::prelude::*;
 use shell::ShellView;
+use std::io::Stdout;
+use std::time::Duration;
 
 #[derive(PartialEq)]
 pub enum EmulatorMode {
@@ -23,17 +21,9 @@ pub enum EmulatorMode {
 }
 
 pub trait View {
-    fn draw(
-        &mut self,
-        terminal: &mut Terminal<CrosstermBackend<Stdout>>,
-        emulator: &Emulator,
-    );
+    fn draw(&mut self, terminal: &mut Terminal<CrosstermBackend<Stdout>>, emulator: &Emulator);
 
-    fn handle_key(
-        &mut self,
-        _key: KeyEvent,
-        _emulator: &mut Emulator,
-    ) -> bool {
+    fn handle_key(&mut self, _key: KeyEvent, _emulator: &mut Emulator) -> bool {
         false
     }
 }
@@ -56,10 +46,7 @@ impl Tui {
 
         Self {
             terminal,
-            views: vec![
-                Box::new(DebugView::new()),
-                Box::new(ShellView::new()),
-            ],
+            views: vec![Box::new(DebugView::new()), Box::new(ShellView::new())],
             active: 0,
             emulator_mode: EmulatorMode::Step,
             advance: false,
@@ -104,7 +91,11 @@ impl Tui {
             KeyCode::Esc => {
                 return false;
             }
-            KeyCode::Right => if self.emulator_mode == EmulatorMode::Step { self.advance = true }
+            KeyCode::Right => {
+                if self.emulator_mode == EmulatorMode::Step {
+                    self.advance = true
+                }
+            }
             _ => {}
         }
 
@@ -116,4 +107,3 @@ impl Tui {
         execute!(self.terminal.backend_mut(), LeaveAlternateScreen).unwrap();
     }
 }
-

@@ -1,17 +1,13 @@
-pub struct Joypad {
-    
-}
+pub struct Joypad {}
 
 impl Joypad {
     pub fn new() -> Self {
-        Self {  }
+        Self {}
     }
 
     pub fn read_reg(&self) -> u8 {
         0
     }
 
-    pub fn write_reg(&mut self, _value: u8) {
-
-    }
+    pub fn write_reg(&mut self, _value: u8) {}
 }

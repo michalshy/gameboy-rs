@@ -1,14 +1,13 @@
 use std::env;
 
-pub mod tui;
 pub mod command;
-use tui::{Tui, EmulatorMode};
+pub mod tui;
 use crate::emulator::Emulator;
+use tui::{EmulatorMode, Tui};
 
 const INSTRUCTIONS_PER_TICK: usize = 10_000;
 
 pub fn run() {
-
     let mut tui = Tui::new();
     let mut emulator = Emulator::new();
 
@@ -17,8 +16,7 @@ pub fn run() {
     loop {
         logic(&mut emulator, &mut tui);
         tui.draw(&emulator);
-        if !tui.poll(&mut emulator)
-        {
+        if !tui.poll(&mut emulator) {
             break;
         }
     }
@@ -33,12 +31,12 @@ pub fn logic(emulator: &mut Emulator, tui: &mut Tui) {
                 emulator.tick();
                 tui.advance = false;
             }
-        },
+        }
         EmulatorMode::Continuous => {
             for _ in 0..INSTRUCTIONS_PER_TICK {
                 emulator.tick();
             }
-        },
+        }
     }
 }
 

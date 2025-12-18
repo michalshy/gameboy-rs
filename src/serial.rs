@@ -24,7 +24,7 @@ impl SerialPort {
     pub fn write_reg(&mut self, addr: u16, value: u8) {
         match addr {
             0xFF01 => self.sb = value,
-            0xFF02 => { 
+            0xFF02 => {
                 self.sc = value;
                 if value == 0x81 {
                     self.output.push(self.sb as char);

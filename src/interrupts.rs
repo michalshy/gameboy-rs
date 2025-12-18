@@ -1,6 +1,6 @@
 pub struct InterruptController {
     pub ie: u8,
-    pub _if: u8
+    pub _if: u8,
 }
 
 impl InterruptController {

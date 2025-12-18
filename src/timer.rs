@@ -1,17 +1,13 @@
-pub struct Timer {
-    
-}
+pub struct Timer {}
 
 impl Timer {
     pub fn new() -> Self {
-        Self {  }
+        Self {}
     }
 
     pub fn read_reg(&self, _addr: u16) -> u8 {
         0
     }
 
-    pub fn write_reg(&mut self, _addr: u16, _value: u8) {
-
-    }
+    pub fn write_reg(&mut self, _addr: u16, _value: u8) {}
 }

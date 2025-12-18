@@ -27,7 +27,3 @@ impl Command for ResetCommand {
         "Emulator reset.".to_string()
     }
 }
-
-
-
-

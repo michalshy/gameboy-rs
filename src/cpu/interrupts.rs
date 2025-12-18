@@ -5,6 +5,9 @@ pub struct Interrupts {
 
 impl Interrupts {
     pub fn new() -> Self {
-        Self { ime: false, ime_scheduled: false }
+        Self {
+            ime: false,
+            ime_scheduled: false,
+        }
     }
 }

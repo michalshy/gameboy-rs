@@ -1,14 +1,14 @@
+mod app;
+mod apu;
 mod cpu;
-mod mmu;
-mod ppu;
-mod timer;
+mod debug;
+mod emulator;
 mod interrupts;
 mod joypad;
+mod mmu;
+mod ppu;
 mod serial;
-mod apu;
-mod debug;
-mod app;
-mod emulator;
+mod timer;
 mod utils;
 
 fn main() {
