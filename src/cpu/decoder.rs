@@ -722,6 +722,11 @@ pub struct OpcodeEntry {
 pub fn decode(byte: u8) -> &'static OpcodeEntry {
     &LOOKUP[byte as usize]
 }
+
+pub fn decode_cb(byte: u8) -> &'static OpcodeEntry {
+    &CB_LOOKUP[byte as usize]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

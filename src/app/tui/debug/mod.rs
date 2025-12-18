@@ -1,20 +1,23 @@
 mod info;
 mod mem;
+mod history;
 
 use info::InfoView;
 use mem::MemoryWidget;
+use history::HistoryView;
 
 use std::io::Stdout;
 
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{Frame, Terminal, layout::{Constraint, Direction, Layout, Rect}, prelude::CrosstermBackend, style::{Color, Modifier, Style}, widgets::{Block, Borders}};
 
-use crate::{app::tui::View, emulator::Emulator};
+use crate::{app::tui::{View}, emulator::Emulator};
 
 #[derive(PartialEq)]
 enum Focus {
     Info,
     Memory,
+    History,
 }
 
 pub trait Widget {
@@ -36,6 +39,7 @@ pub trait Widget {
 pub struct DebugView {
     info: InfoView,
     memory: MemoryWidget,
+    history: HistoryView,
     focus: Focus,
 }
 
@@ -44,6 +48,7 @@ impl DebugView {
         Self {
             info: InfoView::new(),
             memory: MemoryWidget::new(),
+            history: HistoryView::new(),
             focus: Focus::Memory,
         }
     }
@@ -71,6 +76,14 @@ impl View for DebugView {
             Style::default()
         };
 
+        let history_style = if self.focus == Focus::History {
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD)
+        } else {
+            Style::default()
+        };
+
         let info_block = Block::default()
             .title("Info")
             .borders(Borders::ALL)
@@ -81,12 +94,18 @@ impl View for DebugView {
             .borders(Borders::ALL)
             .border_style(memory_style);
 
+        let history_block = Block::default()
+            .title("History")
+            .borders(Borders::ALL)
+            .border_style(history_style);
+
         terminal.draw(|frame| {
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints([
-                    Constraint::Percentage(35),
-                    Constraint::Percentage(65),
+                    Constraint::Percentage(40),
+                    Constraint::Percentage(50),
+                    Constraint::Percentage(10),
                 ])
                 .split(frame.size());
 
@@ -99,6 +118,11 @@ impl View for DebugView {
             frame.render_widget(mem_block.clone(), chunks[1]);
             let mem_inner = mem_block.inner(chunks[1]);
             self.memory.draw_in(frame, mem_inner, emulator);
+
+            // HISTORY
+            frame.render_widget(history_block.clone(), chunks[2]);
+            let history_inner = history_block.inner(chunks[2]);
+            self.history.draw_in(frame, history_inner, emulator);
         }).unwrap();
     }
 
@@ -111,7 +135,8 @@ impl View for DebugView {
             KeyCode::Char('f') => {
                 self.focus = match self.focus {
                     Focus::Info => Focus::Memory,
-                    Focus::Memory => Focus::Info,
+                    Focus::Memory => Focus::History,
+                    Focus::History => Focus::Info,
                 };
                 return true;
             }
@@ -121,6 +146,7 @@ impl View for DebugView {
         match self.focus {
             Focus::Info => self.info.handle_key(key, emulator),
             Focus::Memory => self.memory.handle_key(key, emulator),
+            Focus::History => self.history.handle_key(key, emulator),
         }
     }
 }

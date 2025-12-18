@@ -1,31 +1,22 @@
-use std::{env, time::Instant};
+use std::env;
 
 pub mod tui;
 pub mod command;
-use tui::Tui;
+use tui::{Tui, EmulatorMode};
 use crate::emulator::Emulator;
+
+const INSTRUCTIONS_PER_TICK: usize = 10_000;
 
 pub fn run() {
 
     let mut tui = Tui::new();
     let mut emulator = Emulator::new();
-    let mut last_draw = Instant::now();
 
     handle_arguments(&mut emulator);
 
     loop {
-        // logic
-        if tui.advance || tui.continuous() {
-            emulator.tick();
-            if tui.advance {
-                tui.advance = false;
-            }
-        }
-
-        // draw
+        logic(&mut emulator, &mut tui);
         tui.draw(&emulator);
-
-        // events
         if !tui.poll(&mut emulator)
         {
             break;
@@ -33,6 +24,22 @@ pub fn run() {
     }
 
     tui.shutdown();
+}
+
+pub fn logic(emulator: &mut Emulator, tui: &mut Tui) {
+    match tui.mode() {
+        EmulatorMode::Step => {
+            if tui.advance {
+                emulator.tick();
+                tui.advance = false;
+            }
+        },
+        EmulatorMode::Continuous => {
+            for _ in 0..INSTRUCTIONS_PER_TICK {
+                emulator.tick();
+            }
+        },
+    }
 }
 
 pub fn handle_arguments(emulator: &mut Emulator) {

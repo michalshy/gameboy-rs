@@ -2,6 +2,7 @@ use crate::cpu::decoder::{CC, Opcode, OpcodeEntry, R8, R16};
 use crate::cpu::Cpu;
 use crate::cpu::registers::Flags;
 use crate::mmu::{Mmu, HIGH_RAM};
+use crate::cpu::decoder::decode_cb;
 
 impl Cpu {
     fn increment_pc(&mut self, v: u16) {
@@ -545,7 +546,8 @@ impl Cpu {
                 increment = false;
             },
             Opcode::Rst(vec) => {
-                self.push_u16(mmu, self.registers.pc.wrapping_add(1));
+                let ret = self.registers.pc + entry.length as u16;
+                self.push_u16(mmu, ret);
                 self.registers.pc = *vec as u16;
                 increment = false;
             },
@@ -660,7 +662,10 @@ impl Cpu {
                 // Undefined
             },
             Opcode::Prefix => {
-                // Marks CB opcode
+                increment = false;
+                let opcode_byte = mmu.read_8(self.registers.pc.wrapping_add(1));
+                let entry = decode_cb(opcode_byte);
+                self.execute_instruction(entry, mmu);
             },
         }
         if increment {

@@ -17,7 +17,7 @@ use crate::{emulator::Emulator};
 use shell::ShellView;
 
 #[derive(PartialEq)]
-enum EmulatorMode {
+pub enum EmulatorMode {
     Step,
     Continuous,
 }
@@ -70,8 +70,8 @@ impl Tui {
         self.views[self.active].draw(&mut self.terminal, emulator);
     }
 
-    pub fn continuous(&self) -> bool {
-        self.emulator_mode == EmulatorMode::Continuous 
+    pub fn mode(&self) -> &EmulatorMode {
+        &self.emulator_mode
     }
 
     pub fn poll(&mut self, emulator: &mut Emulator) -> bool {
