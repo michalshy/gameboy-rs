@@ -11,7 +11,7 @@ impl Joypad {
         0
     }
 
-    pub fn write_reg(&mut self, value: u8) {
+    pub fn write_reg(&mut self, _value: u8) {
 
     }
 }
