@@ -87,10 +87,10 @@ impl Cpu {
 
     fn condition_met(&self, cc: &CC) -> bool {
         match cc {
-            CC::NZ => self.registers.get_flag(Flags::Z) == 0,
-            CC::Z => self.registers.get_flag(Flags::Z) != 0,
-            CC::NC => self.registers.get_flag(Flags::C) == 0,
-            CC::C => self.registers.get_flag(Flags::C) != 0,
+            CC::NZ => !self.registers.get_flag(Flags::Z),
+            CC::Z => self.registers.get_flag(Flags::Z),
+            CC::NC => !self.registers.get_flag(Flags::C),
+            CC::C => self.registers.get_flag(Flags::C),
         }
     }
 
@@ -166,11 +166,11 @@ impl Cpu {
                     .registers
                     .a
                     .wrapping_add(value)
-                    .wrapping_add(self.registers.get_flag(Flags::C));
+                    .wrapping_add(self.registers.get_flag(Flags::C) as u8);
                 let z = result == 0;
                 let h = ((self.registers.a & 0x0F)
                     + (value & 0x0F)
-                    + self.registers.get_flag(Flags::C))
+                    + self.registers.get_flag(Flags::C) as u8)
                     > 0x0F;
                 let c = (self.registers.a as u16
                     + value as u16
@@ -185,11 +185,11 @@ impl Cpu {
                     .registers
                     .a
                     .wrapping_add(value)
-                    .wrapping_add(self.registers.get_flag(Flags::C));
+                    .wrapping_add(self.registers.get_flag(Flags::C) as u8);
                 let z = result == 0;
                 let h = ((self.registers.a & 0x0F)
                     + (value & 0x0F)
-                    + self.registers.get_flag(Flags::C))
+                    + self.registers.get_flag(Flags::C) as u8) 
                     > 0x0F;
                 let c = (self.registers.a as u16
                     + value as u16
@@ -256,10 +256,10 @@ impl Cpu {
                     .registers
                     .a
                     .wrapping_sub(value)
-                    .wrapping_sub(self.registers.get_flag(Flags::C));
+                    .wrapping_sub(self.registers.get_flag(Flags::C) as u8);
                 let z = result == 0;
                 let h =
-                    self.registers.a & 0x0F < ((value & 0x0F) + self.registers.get_flag(Flags::C));
+                    self.registers.a & 0x0F < ((value & 0x0F) + self.registers.get_flag(Flags::C) as u8);
                 let c = (self.registers.a as u16)
                     < (value as u16 + self.registers.get_flag(Flags::C) as u16);
                 self.registers.a = result;
@@ -271,10 +271,10 @@ impl Cpu {
                     .registers
                     .a
                     .wrapping_sub(value)
-                    .wrapping_sub(self.registers.get_flag(Flags::C));
+                    .wrapping_sub(self.registers.get_flag(Flags::C) as u8);
                 let z = result == 0;
                 let h =
-                    self.registers.a & 0x0F < ((value & 0x0F) + self.registers.get_flag(Flags::C));
+                    self.registers.a & 0x0F < ((value & 0x0F) + self.registers.get_flag(Flags::C) as u8);
                 let c = (self.registers.a as u16)
                     < (value as u16 + self.registers.get_flag(Flags::C) as u16);
                 self.registers.a = result;
@@ -369,7 +369,7 @@ impl Cpu {
             }
             Opcode::RlR8(reg) => {
                 let val = self.read_r8(reg, mmu);
-                let old_carry = self.registers.get_flag(Flags::C);
+                let old_carry = self.registers.get_flag(Flags::C) as u8;
 
                 self.registers.set_flag(Flags::C, (val & 0x80) != 0);
 
@@ -381,7 +381,7 @@ impl Cpu {
             }
             Opcode::RlA => {
                 let a = self.registers.a;
-                let old_carry = self.registers.get_flag(Flags::C);
+                let old_carry = self.registers.get_flag(Flags::C) as u8;
 
                 self.registers.set_flag(Flags::C, (a & 0x80) != 0);
                 self.registers.a = (a << 1) | old_carry;
@@ -411,7 +411,7 @@ impl Cpu {
             }
             Opcode::RrR8(reg) => {
                 let val = self.read_r8(reg, mmu);
-                let old_carry = self.registers.get_flag(Flags::C);
+                let old_carry = self.registers.get_flag(Flags::C) as u8;
 
                 self.registers.set_flag(Flags::C, (val & 0x01) != 0);
 
@@ -423,7 +423,7 @@ impl Cpu {
             }
             Opcode::RrA => {
                 let a = self.registers.a;
-                let old_carry = self.registers.get_flag(Flags::C);
+                let old_carry = self.registers.get_flag(Flags::C) as u8;
 
                 self.registers.set_flag(Flags::C, (a & 0x01) != 0);
                 self.registers.a = (a >> 1) | (old_carry << 7);
@@ -565,7 +565,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::H, false);
                 self.registers.set_flag(Flags::N, false);
                 self.registers
-                    .set_flag(Flags::C, self.registers.get_flag(Flags::C) == 0);
+                    .set_flag(Flags::C, self.registers.get_flag(Flags::C));
             }
             Opcode::AddHLSP => {
                 let hl = self.registers.hl();

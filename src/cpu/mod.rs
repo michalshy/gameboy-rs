@@ -5,6 +5,7 @@ pub mod registers;
 
 use decoder::decode;
 use registers::Registers;
+use std::collections::VecDeque;
 
 use crate::{
     cpu::{decoder::OpcodeEntry, interrupts::Interrupts},
@@ -12,10 +13,12 @@ use crate::{
     mmu::Mmu,
 };
 
+const HISTORY_CAPACITY: usize = 25;
+
 pub struct Cpu {
     pub registers: Registers,
     pub int: Interrupts,
-    pub history: Vec<String>,
+    pub history: VecDeque<String>,
 }
 
 impl Cpu {
@@ -23,7 +26,7 @@ impl Cpu {
         Self {
             registers: Registers::new(),
             int: Interrupts::new(),
-            history: Vec::new(),
+            history: VecDeque::with_capacity(HISTORY_CAPACITY),
         }
     }
 
@@ -33,7 +36,11 @@ impl Cpu {
         let entry = decode(opcode_byte);
 
         self.execute_instruction(entry, mmu);
-        self.history.push(disassemble(&entry.opcode));
+        
+        if self.history.len() == HISTORY_CAPACITY {
+            self.history.pop_front(); // remove oldest
+        }
+        self.history.push_back(disassemble(&entry.opcode));
 
         entry.cycles as u32
     }

@@ -90,8 +90,8 @@ impl Registers {
             self.f |= Flags::C.bit();
         }
     }
-    pub fn get_flag(&self, flag: Flags) -> u8 {
-        self.f & flag.bit()
+    pub fn get_flag(&self, flag: Flags) -> bool {
+        (self.f & flag.bit()) != 0
     }
     pub fn reset(&mut self) {
         // resets to dmg state
@@ -176,23 +176,23 @@ mod tests {
     fn test_get_flag_set() {
         let mut registers = Registers::new();
         registers.set_flags(false, false, true, false);
-        assert_eq!(registers.get_flag(Flags::H), Flags::H.bit());
-        assert_eq!(registers.get_flag(Flags::Z), 0);
+        assert_eq!(registers.get_flag(Flags::H), true);
+        assert_eq!(registers.get_flag(Flags::Z), false);
     }
 
     #[test]
     fn test_get_flag_clear() {
         let mut registers = Registers::new();
         registers.set_flags(false, true, false, false);
-        assert_eq!(registers.get_flag(Flags::N), Flags::N.bit());
+        assert_eq!(registers.get_flag(Flags::N), true);
     }
 
     #[test]
     fn test_multiple_flag_operations() {
         let mut registers = Registers::new();
         registers.set_flags(true, true, true, true);
-        assert_eq!(registers.get_flag(Flags::Z), Flags::Z.bit());
-        assert_eq!(registers.get_flag(Flags::N), Flags::N.bit());
+        assert_eq!(registers.get_flag(Flags::Z), true);
+        assert_eq!(registers.get_flag(Flags::N), true);
     }
     #[test]
     fn test_reset_to_dmg_state() {
@@ -222,8 +222,8 @@ mod tests {
     fn test_set_flag_method() {
         let mut registers = Registers::new();
         registers.set_flag(Flags::Z, true);
-        assert_eq!(registers.get_flag(Flags::Z), Flags::Z.bit());
+        assert_eq!(registers.get_flag(Flags::Z), true);
         registers.set_flag(Flags::Z, false);
-        assert_eq!(registers.get_flag(Flags::Z), 0);
+        assert_eq!(registers.get_flag(Flags::Z), false);
     }
 }

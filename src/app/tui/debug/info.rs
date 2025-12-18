@@ -1,4 +1,4 @@
-use crate::{app::tui::debug::Widget, debug::disasm::disassemble, emulator::Emulator};
+use crate::{app::tui::debug::Widget, cpu::registers::Flags, debug::disasm::disassemble, emulator::Emulator};
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -18,7 +18,8 @@ impl Widget for InfoView {
             A:  0x{:02X}  F: 0x{:02X}\n\
             B:  0x{:02X}  C: 0x{:02X}\n\
             D:  0x{:02X}  E: 0x{:02X}\n\
-            H:  0x{:02X}  L: 0x{:02X}",
+            H:  0x{:02X}  L: 0x{:02X}\n\
+            Z({}), N({}), H({}), C({})",
             cpu.registers.pc,
             cpu.registers.sp,
             cpu.registers.a,
@@ -29,6 +30,10 @@ impl Widget for InfoView {
             cpu.registers.e,
             cpu.registers.h,
             cpu.registers.l,
+            cpu.registers.get_flag(Flags::Z) as u8,
+            cpu.registers.get_flag(Flags::N) as u8,
+            cpu.registers.get_flag(Flags::H) as u8,
+            cpu.registers.get_flag(Flags::C) as u8,
         );
 
         let cartridge_info = if let Some(cart) = &mmu.cartridge {
