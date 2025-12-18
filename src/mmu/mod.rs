@@ -41,6 +41,7 @@ pub struct Mmu {
     pub apu: Apu
 }
 
+#[allow(clippy::too_many_arguments)] // TODO: reconsider
 impl Mmu {
     pub fn new(
         memory: Memory,
@@ -72,7 +73,6 @@ impl Mmu {
         0xC000..=0xDFFF => self.read_wram(addr),
         0xE000..=0xFDFF => self.read_echo(addr),
         0xFE00..=0xFE9F => self.read_oam(addr),
-        0xFEA0..=0xFEFF => 0xFF,
         0xFF00 => self.joypad.read_reg(),
         0xFF01..=0xFF02 => self.serial.read_reg(addr),
         0xFF04..=0xFF07 => self.timer.read_reg(addr),
@@ -81,7 +81,7 @@ impl Mmu {
         0xFF40..=0xFF4B => self.ppu.read_reg(addr),
         0xFF80..=0xFFFE => self.read_hram(addr),
         0xFFFF => self.interrupts.ie,
-        0xFF00..=0xFF7F => 0xFF,
+        _ => 0xFF,
         }
     }
 

@@ -24,7 +24,7 @@ pub struct ResetCommand;
 impl Command for ResetCommand {
     fn execute(&self, emulator: &mut Emulator) -> String {
         let _ = emulator.reset();
-        format!("Emulator reset.")
+        "Emulator reset.".to_string()
     }
 }
 

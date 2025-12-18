@@ -28,7 +28,7 @@ impl Emulator {
             let apu = Apu::new();
             let mmu = Mmu::new(memory, None, timer, ppu, joypad, interrupt_controller, serial, apu);
 
-        return Self { 
+        Self { 
             cpu,
             mmu
         }

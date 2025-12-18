@@ -7,7 +7,7 @@ pub struct Cartridge {
     pub mbc: Box<dyn Mbc>
 }
 
-fn detect_mbc(rom: &Vec<u8>) -> Result<Mbcs, Error> {
+fn detect_mbc(rom: &[u8]) -> Result<Mbcs, Error> {
     match rom[0x147] {
         0x00 => Ok(Mbcs::NoMbc),
         0x01..=0x03 => Ok(Mbcs::Mbc1),
@@ -18,7 +18,7 @@ fn detect_mbc(rom: &Vec<u8>) -> Result<Mbcs, Error> {
     }
 }
 
-fn detect_ram_size(rom: &Vec<u8>) -> Result<usize, Error> {
+fn detect_ram_size(rom: &[u8]) -> Result<usize, Error> {
     match rom[0x149] {
         0x00 => Ok(0),
         0x01 => Ok(2),

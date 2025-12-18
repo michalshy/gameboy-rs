@@ -131,16 +131,13 @@ impl View for DebugView {
         key: KeyEvent,
         emulator: &mut Emulator,
     ) -> bool {
-        match key.code {
-            KeyCode::Char('f') => {
-                self.focus = match self.focus {
-                    Focus::Info => Focus::Memory,
-                    Focus::Memory => Focus::History,
-                    Focus::History => Focus::Info,
-                };
-                return true;
-            }
-            _ => {}
+        if let KeyCode::Char('f') = key.code {
+            self.focus = match self.focus {
+                Focus::Info => Focus::Memory,
+                Focus::Memory => Focus::History,
+                Focus::History => Focus::Info,
+            };
+            return true;
         }
 
         match self.focus {

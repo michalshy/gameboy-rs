@@ -104,10 +104,7 @@ impl Tui {
             KeyCode::Esc => {
                 return false;
             }
-            KeyCode::Right => match self.emulator_mode {
-                EmulatorMode::Step => self.advance = true,
-                _ => (),
-            }
+            KeyCode::Right => if self.emulator_mode == EmulatorMode::Step { self.advance = true }
             _ => {}
         }
 

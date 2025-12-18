@@ -384,7 +384,7 @@ impl Cpu {
 
                 self.registers.set_flag(Flags::C, (val & 0x80) != 0);
 
-                let result = (val << 1) | (val >> 7);
+                let result = val.rotate_left(1);
                 self.write_r8(reg, result, mmu);
                 self.registers.set_flag(Flags::Z, result == 0);
                 self.registers.set_flag(Flags::N, false);
@@ -394,7 +394,7 @@ impl Cpu {
                 let a = self.registers.a;
 
                 self.registers.set_flag(Flags::C, (a & 0x80) != 0);
-                self.registers.a = (a << 1) | (a >> 7);
+                self.registers.a = a.rotate_left(1);
                 self.registers.set_flag(Flags::Z, false);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
@@ -426,7 +426,7 @@ impl Cpu {
 
                 self.registers.set_flag(Flags::C, (val & 0x01) != 0);
 
-                let result = (val >> 1) | (val << 7);
+                let result = val.rotate_right(1);
                 self.write_r8(reg, result, mmu);
                 self.registers.set_flag(Flags::Z, result == 0);
                 self.registers.set_flag(Flags::N, false);
@@ -436,7 +436,7 @@ impl Cpu {
                 let a = self.registers.a;
 
                 self.registers.set_flag(Flags::C, (a & 0x01) != 0);
-                self.registers.a = (a >> 1) | (a << 7);
+                self.registers.a = a.rotate_right(1);
                 self.registers.set_flag(Flags::Z, false);
                 self.registers.set_flag(Flags::N, false);
                 self.registers.set_flag(Flags::H, false);
@@ -473,7 +473,7 @@ impl Cpu {
             },
             Opcode::SwapR8(reg) => {
                 let val = self.read_r8(reg, mmu);
-                let result = (val >> 4) | (val << 4);
+                let result = val.rotate_left(4);
                 self.write_r8(reg, result, mmu);
                 self.registers.set_flags(
                     result == 0, 
