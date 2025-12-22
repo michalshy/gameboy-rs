@@ -72,7 +72,7 @@ impl Emulator {
     }
 
     pub fn add_breakpoint(&mut self, address: u16) -> String {
-        return self.debug.add_breakpoint(address);
+        self.debug.add_breakpoint(address)
     }
 
     pub fn check_breakpoint(&self) -> bool {
