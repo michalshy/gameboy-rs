@@ -22,7 +22,8 @@ impl Widget for HistoryView {
             NOI ({}):\n\
             ------------",
             cpu.history.len(),
-            cpu.instruction_number);
+            cpu.instruction_number
+        );
         for (i, e) in cpu.history.iter().rev().take(HISTORY).rev().enumerate() {
             history.push_str(&format!("{:02}: {}\n", i, e));
         }

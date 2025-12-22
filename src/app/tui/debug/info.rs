@@ -1,4 +1,6 @@
-use crate::{app::tui::debug::Widget, cpu::registers::Flags, debug::disasm::disassemble, emulator::Emulator};
+use crate::{
+    app::tui::debug::Widget, cpu::registers::Flags, debug::disasm::disassemble, emulator::Emulator,
+};
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},

@@ -1,8 +1,6 @@
 // Defines commands which are used to order behavior to system via implemented shell.
 
-use std::path;
-
-use crate::emulator::{self, Emulator};
+use crate::emulator::{Emulator};
 
 pub trait Command {
     fn execute(&self, emulator: &mut Emulator) -> String;

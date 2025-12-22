@@ -2,6 +2,7 @@ use std::io::Error;
 
 use crate::apu::Apu;
 use crate::cpu::Cpu;
+use crate::debug::Debug;
 use crate::interrupts::InterruptController;
 use crate::joypad::Joypad;
 use crate::mmu::Mmu;
@@ -9,12 +10,11 @@ use crate::mmu::memory::Memory;
 use crate::ppu::Ppu;
 use crate::serial::SerialPort;
 use crate::timer::Timer;
-use crate::debug::Debug;
 
 pub struct Emulator {
     pub cpu: Cpu,
     pub mmu: Mmu,
-    pub debug: Debug
+    pub debug: Debug,
 }
 
 impl Emulator {
@@ -39,10 +39,10 @@ impl Emulator {
             apu,
         );
 
-        Self { 
-            cpu, 
-            mmu, 
-            debug: Debug::new()
+        Self {
+            cpu,
+            mmu,
+            debug: Debug::new(),
         }
     }
 
@@ -72,13 +72,13 @@ impl Emulator {
     }
 
     pub fn add_breakpoint(&mut self, address: u16) -> String {
-        return self.debug.add_breakpoint(address)
+        return self.debug.add_breakpoint(address);
     }
 
-    pub fn check_breakpoint(&self) -> bool{
+    pub fn check_breakpoint(&self) -> bool {
         for address in &self.debug.breakpoints {
             if self.cpu.registers.pc == *address {
-                return true
+                return true;
             }
         }
         false

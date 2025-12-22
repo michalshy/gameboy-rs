@@ -1,7 +1,10 @@
 use std::env;
 use std::io::Stdout;
 
-use crate::app::command::{Command, LoadRomCommand, ResetCommand, DumpInstructionsCommand, ToggleLogCommand, AddBreakpointCommand};
+use crate::app::command::{
+    AddBreakpointCommand, Command, DumpInstructionsCommand, LoadRomCommand, ResetCommand,
+    ToggleLogCommand,
+};
 use crate::app::tui::View;
 use crate::emulator::Emulator;
 use crossterm::event::{KeyCode, KeyEvent};
@@ -108,14 +111,16 @@ impl ShellView {
 
             "dump" if parts.len() == 2 => {
                 let path = parts[1].to_string();
-                self.history.push(DumpInstructionsCommand{path}.execute(emulator));
+                self.history
+                    .push(DumpInstructionsCommand { path }.execute(emulator));
             }
 
             "break" if parts.len() == 2 => {
                 let tmp = parts[1].to_string();
                 let arg = tmp.strip_prefix("0x").unwrap();
                 let address = u16::from_str_radix(arg, 16).unwrap();
-                self.history.push(AddBreakpointCommand{address}.execute(emulator));
+                self.history
+                    .push(AddBreakpointCommand { address }.execute(emulator));
             }
 
             _ => {

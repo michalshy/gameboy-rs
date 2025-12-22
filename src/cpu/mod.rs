@@ -5,8 +5,8 @@ pub mod registers;
 
 use decoder::decode;
 use registers::Registers;
-use std::{fs::File, io::Error};
 use std::io::Write;
+use std::{fs::File, io::Error};
 
 use crate::{
     cpu::{decoder::OpcodeEntry, interrupts::Interrupts},

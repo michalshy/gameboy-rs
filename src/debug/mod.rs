@@ -8,15 +8,17 @@ pub struct Debug {
 
 impl Debug {
     pub fn new() -> Self {
-        Self { log_cpu: false, breakpoints: Vec::new() }
+        Self {
+            log_cpu: false,
+            breakpoints: Vec::new(),
+        }
     }
 
     pub fn add_breakpoint(&mut self, address: u16) -> String {
         if let Some(pos) = self.breakpoints.iter().position(|&x| x == address) {
             self.breakpoints.remove(pos);
             "Removed breakpoint".to_string()
-        }
-        else {
+        } else {
             self.breakpoints.push(address);
             "Added breakpoint".to_string()
         }

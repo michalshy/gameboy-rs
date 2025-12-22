@@ -62,7 +62,7 @@ impl Ppu {
             0xFF41 => self.stat = value,
             0xFF42 => self.scy = value,
             0xFF43 => self.scx = value,
-            0xFF44 => {}                      
+            0xFF44 => {}
             0xFF45 => self.lyc = value,
             0xFF47 => self.bgp = value,
             0xFF48 => self.obp0 = value,

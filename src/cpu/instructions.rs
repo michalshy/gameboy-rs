@@ -190,7 +190,7 @@ impl Cpu {
                 let z = result == 0;
                 let h = ((self.registers.a & 0x0F)
                     + (value & 0x0F)
-                    + self.registers.get_flag(Flags::C) as u8) 
+                    + self.registers.get_flag(Flags::C) as u8)
                     > 0x0F;
                 let c = (self.registers.a as u16
                     + value as u16
@@ -259,8 +259,8 @@ impl Cpu {
                     .wrapping_sub(value)
                     .wrapping_sub(self.registers.get_flag(Flags::C) as u8);
                 let z = result == 0;
-                let h =
-                    self.registers.a & 0x0F < ((value & 0x0F) + self.registers.get_flag(Flags::C) as u8);
+                let h = self.registers.a & 0x0F
+                    < ((value & 0x0F) + self.registers.get_flag(Flags::C) as u8);
                 let c = (self.registers.a as u16)
                     < (value as u16 + self.registers.get_flag(Flags::C) as u16);
                 self.registers.a = result;
@@ -274,8 +274,8 @@ impl Cpu {
                     .wrapping_sub(value)
                     .wrapping_sub(self.registers.get_flag(Flags::C) as u8);
                 let z = result == 0;
-                let h =
-                    self.registers.a & 0x0F < ((value & 0x0F) + self.registers.get_flag(Flags::C) as u8);
+                let h = self.registers.a & 0x0F
+                    < ((value & 0x0F) + self.registers.get_flag(Flags::C) as u8);
                 let c = (self.registers.a as u16)
                     < (value as u16 + self.registers.get_flag(Flags::C) as u16);
                 self.registers.a = result;
@@ -586,8 +586,10 @@ impl Cpu {
 
                 self.registers.set_flag(Flags::Z, false);
                 self.registers.set_flag(Flags::N, false);
-                self.registers.set_flag(Flags::H, ((sp & 0xF) + ((e as u16) & 0xF)) > 0xF);
-                self.registers.set_flag(Flags::C, ((sp & 0xFF) + ((e as u16) & 0xFF)) > 0xFF);
+                self.registers
+                    .set_flag(Flags::H, ((sp & 0xF) + ((e as u16) & 0xF)) > 0xF);
+                self.registers
+                    .set_flag(Flags::C, ((sp & 0xFF) + ((e as u16) & 0xFF)) > 0xFF);
 
                 self.registers.sp = result;
             }
