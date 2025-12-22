@@ -1,70 +1,139 @@
+# gameboy-rs
 
-A compact, modular Game Boy emulator written in Rust. The project focuses on correctness and clarity: a minimal, well-organized codebase for implementing the CPU, MMU, PPU, APU and a small TUI for debugging and development.
+A Game Boy emulator written in Rust, focused on clear architecture and incremental correctness rather than completeness or performance.
+The project serves as a learning-oriented emulator core with a simple command-line interface and debugging tools.
 
-Status
-------
-- Work in progress — core layout and scaffolding in place.
-- **CPU**: Decoder, register helpers and opcode table complete; instruction semantics being implemented.
-- **MMU**: Basic memory map with VRAM, WRAM, HRAM, OAM; cartridge and MBC detection functional.
-- **Cartridge**: ROM loading, MBC type detection (NoMBC, MBC1-5), and RAM sizing implemented.
-- **App**: TUI shell with command system; supports ROM loading and emulator reset.
-- **PPU & APU**: Basic stubs with register read/write; full implementations pending.
+## Status
 
-Goals
------
-- Implement a cycle-accurate CPU core and instruction set.
-- Add a simple MMU + cartridge/MBC support and integrate with CPU.
-- Implement PPU rendering pipeline and optional APU audio.
-- Provide a TUI-based developer UI for inspecting registers, memory and disassembly.
+This project is a work in progress.
 
-Repository layout (high level)
------------------------------
-- `src/cpu/` — decoder, registers, instruction implementations.
-- `src/mmu/` — memory map, cartridge and MBC logic.
-- `src/ppu/` — PPU registers and renderer (WIP).
-- `src/apu/` — audio channel stubs (WIP).
-- `src/app/` — small TUI to drive the emulator and display state.
-- `src/debug/` — disassembler and instruction logger.
-- `roms/` — test ROMs and CPU instruction test cartridges.
+Core components such as the CPU, memory system, cartridge handling, and debugging infrastructure are partially implemented. Graphics and audio subsystems are currently incomplete or stubbed.
 
-Implemented features
---------------------
-- **CPU Registers**: All 8-bit and 16-bit registers (A, F, B, C, D, E, H, L, SP, PC) with flag accessors.
-- **CPU Decoder**: Complete opcode table (256 main opcodes + 256 CB-prefixed) with cycle counts.
-- **MMU**: Memory management with separate regions (ROM, VRAM, WRAM, HRAM, OAM, cartridge RAM).
-- **Cartridge System**: Automatic MBC detection; supports NoMBC, MBC1, MBC2, MBC3, MBC5.
-- **TUI Commands**: Shell interface with ROM loading (`load <path>`) and emulator reset.
-- **Emulator Core**: CPU step-cycle integration with MMU; tick-based synchronization.
+## Goals
 
-Quick start
------------
-Prerequisites: Rust toolchain (stable), `cargo` on PATH.
+The main goals of this project are:
 
-Build the project:
+- Provide a readable and modular Game Boy emulator architecture
+- Incrementally implement accurate hardware behavior
+- Offer debugging and inspection tools useful for emulator development
+- Serve as a reference or learning project for Rust and emulator design
 
+## Features
+
+Currently implemented or partially implemented features include:
+
+- CPU (LR35902)
+  - Instruction decoding
+  - Register file
+  - Opcode execution logic (in progress)
+- Memory Management Unit (MMU)
+  - Memory mapping for ROM, RAM, VRAM, OAM, HRAM
+  - Cartridge loading
+  - Basic MBC support scaffolding
+- Cartridge handling
+  - ROM parsing
+  - Header inspection
+- Debugging utilities
+  - Disassembler
+  - Instruction logging
+- Command-line interface
+  - Interactive shell
+  - ROM loading and reset commands
+
+Graphics (PPU) and audio (APU) are present as modules but are not yet fully implemented.
+
+## Building
+
+### Requirements
+
+- Rust (stable)
+
+Install Rust using rustup if it is not already installed:
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
+
+### Build
+
+Clone the repository and build the project:
+
+```sh
+git clone https://github.com/michalshy/gameboy-rs.git
+cd gameboy-rs
 cargo build
 ```
 
-Run (debug build):
+## Running
 
-```
+Run the emulator using:
+
+```sh
 cargo run
 ```
 
-Loading a ROM
-Once running, use the shell command:
+This starts an interactive command-line shell.
 
+## Minimal Usage
+
+Load a Game Boy ROM from the shell:
+
+```text
+load-rom path/to/rom.gb
 ```
-load-rom <path-to-rom>
+
+Reset the emulator state:
+
+```text
+reset
 ```
 
-Example: `load-rom roms/tetris.gb`
+Quit the shell:
 
-Contributing
-------------
-PRs welcome. If you're adding instructions, include unit tests for flags/side effects and a short note in the PR describing any behavior differences from real hardware.
+```text
+exit
+```
 
-License
--------
-Currently unlicensed - tbd.
+The shell is intended for debugging and development rather than gameplay.
+
+## Test ROMs
+
+The repository contains test ROMs (such as CPU instruction tests) used to validate correctness during development. These are useful for verifying opcode behavior and flag handling.
+
+## Design Philosophy
+
+- Prefer explicit and readable code over clever optimizations
+- Keep emulator subsystems loosely coupled
+- Make hardware behavior easy to inspect and debug
+- Accept partial implementations as long as structure is correct
+
+Accuracy and completeness are secondary to clarity at the current stage of development.
+
+## Future Work
+
+Planned or potential improvements include:
+
+- Full CPU instruction coverage with cycle accuracy
+- Complete PPU rendering pipeline
+- Audio (APU) implementation
+- More comprehensive cartridge and MBC support
+- Improved debugging tools
+- Optional graphical or web-based frontends
+
+## Contributing
+
+Contributions are welcome.
+
+If you plan to contribute:
+
+- Keep changes focused and well-scoped
+- Add tests for CPU instructions and edge cases where applicable
+- Document any known inaccuracies or hardware deviations
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+## About
+
+`gameboy-rs` is a personal emulator project written in Rust, intended for learning, experimentation, and exploration of emulator internals and low-level system design.
