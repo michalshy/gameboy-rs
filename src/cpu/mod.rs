@@ -5,20 +5,20 @@ pub mod registers;
 
 use decoder::decode;
 use registers::Registers;
-use std::collections::VecDeque;
+use std::{fs::File, io::Error};
+use std::io::Write;
 
 use crate::{
     cpu::{decoder::OpcodeEntry, interrupts::Interrupts},
-    debug::disasm::disassemble,
+    debug::{Debug, disasm::disassemble},
     mmu::Mmu,
 };
-
-const HISTORY_CAPACITY: usize = 25;
 
 pub struct Cpu {
     pub registers: Registers,
     pub int: Interrupts,
-    pub history: VecDeque<String>,
+    pub history: Vec<String>,
+    pub instruction_number: u128,
 }
 
 impl Cpu {
@@ -26,21 +26,21 @@ impl Cpu {
         Self {
             registers: Registers::new(),
             int: Interrupts::new(),
-            history: VecDeque::with_capacity(HISTORY_CAPACITY),
+            history: Vec::new(),
+            instruction_number: 0,
         }
     }
 
-    pub fn step(&mut self, mmu: &mut Mmu) -> u32 {
+    pub fn step(&mut self, mmu: &mut Mmu, debug: &Debug) -> u32 {
         let opcode_byte = mmu.read_8(self.registers.pc);
 
         let entry = decode(opcode_byte);
 
-        self.execute_instruction(entry, mmu);
-        
-        if self.history.len() == HISTORY_CAPACITY {
-            self.history.pop_front(); // remove oldest
+        self.execute_instruction(entry, mmu, true);
+
+        if debug.log_cpu {
+            self.history.push(disassemble(&entry.opcode));
         }
-        self.history.push_back(disassemble(&entry.opcode));
 
         entry.cycles as u32
     }
@@ -48,5 +48,15 @@ impl Cpu {
     pub fn get_current_opcode(&self, mmu: &Mmu) -> &OpcodeEntry {
         let opcode_byte = mmu.read_8(self.registers.pc);
         decode(opcode_byte)
+    }
+
+    pub fn dump_history(&mut self, path: &String) -> Result<(), Error> {
+        let mut file = File::create(path)?;
+
+        for line in &self.history {
+            writeln!(file, "{}", line)?;
+        }
+
+        Ok(())
     }
 }

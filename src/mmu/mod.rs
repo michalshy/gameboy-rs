@@ -103,6 +103,8 @@ impl Mmu {
             0xFF0F => self.interrupts._if = value,
             0xFF10..=0xFF3F => self.apu.write_reg(addr, value),
             0xFF40..=0xFF4B => self.ppu.write_reg(addr, value),
+            0xFF68..=0xFF69 => self.ppu.write_reg(addr, value),
+            0xFF4F => self.ppu.write_reg(addr, value),
             0xFF80..=0xFFFE => self.write_hram(addr, value),
             0xFFFF => self.interrupts.ie = value,
             _ => {
@@ -124,8 +126,8 @@ impl Mmu {
     //     self.write_8(addr.wrapping_add(1), hi);
     // }
 
-    pub fn tick(&mut self, _cycles: u32) {
-        // TODO:
+    pub fn tick(&mut self, cycles: &u32) {
+        self.ppu.tick(cycles)
     }
 
     pub fn load_rom(&mut self, path: &str) -> Result<(), Error> {

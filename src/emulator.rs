@@ -9,10 +9,12 @@ use crate::mmu::memory::Memory;
 use crate::ppu::Ppu;
 use crate::serial::SerialPort;
 use crate::timer::Timer;
+use crate::debug::Debug;
 
 pub struct Emulator {
     pub cpu: Cpu,
     pub mmu: Mmu,
+    pub debug: Debug
 }
 
 impl Emulator {
@@ -37,13 +39,17 @@ impl Emulator {
             apu,
         );
 
-        Self { cpu, mmu }
+        Self { 
+            cpu, 
+            mmu, 
+            debug: Debug::new()
+        }
     }
 
     pub fn tick(&mut self) -> u32 {
-        let cycles = self.cpu.step(&mut self.mmu);
+        let cycles = self.cpu.step(&mut self.mmu, &self.debug);
 
-        self.mmu.tick(cycles);
+        self.mmu.tick(&cycles);
 
         cycles
     }
@@ -55,5 +61,26 @@ impl Emulator {
     pub fn reset(&mut self) -> Result<(), Error> {
         self.cpu.registers.reset();
         Ok(())
+    }
+
+    pub fn dump_history(&mut self, path: &String) -> Result<(), Error> {
+        self.cpu.dump_history(path)
+    }
+
+    pub fn toggle_log(&mut self) {
+        self.debug.log_cpu = !self.debug.log_cpu;
+    }
+
+    pub fn add_breakpoint(&mut self, address: u16) -> String {
+        return self.debug.add_breakpoint(address)
+    }
+
+    pub fn check_breakpoint(&self) -> bool{
+        for address in &self.debug.breakpoints {
+            if self.cpu.registers.pc == *address {
+                return true
+            }
+        }
+        false
     }
 }

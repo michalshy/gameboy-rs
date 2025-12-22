@@ -5,6 +5,8 @@ use ratatui::{
     widgets::{Block, Paragraph},
 };
 
+const HISTORY: usize = 35;
+
 pub struct HistoryView;
 
 impl Widget for HistoryView {
@@ -15,9 +17,14 @@ impl Widget for HistoryView {
 
         frame.render_widget(&outer, area);
 
-        let mut history = String::new();
-        for e in &cpu.history {
-            history = [history, e.to_owned()].join("\n");
+        let mut history = format!(
+            "NO ({}):\n\
+            NOI ({}):\n\
+            ------------",
+            cpu.history.len(),
+            cpu.instruction_number);
+        for (i, e) in cpu.history.iter().rev().take(HISTORY).rev().enumerate() {
+            history.push_str(&format!("{:02}: {}\n", i, e));
         }
 
         frame.render_widget(Paragraph::new(history).block(Block::default()), area);

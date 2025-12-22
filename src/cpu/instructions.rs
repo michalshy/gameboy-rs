@@ -94,8 +94,9 @@ impl Cpu {
         }
     }
 
-    pub fn execute_instruction(&mut self, entry: &OpcodeEntry, mmu: &mut Mmu) {
-        let mut increment = true;
+    pub fn execute_instruction(&mut self, entry: &OpcodeEntry, mmu: &mut Mmu, increment: bool) {
+        let mut increment = increment;
+        self.instruction_number += 1;
         match &entry.opcode {
             Opcode::LdR8R8(reg, vreg) => {
                 let value = self.read_r8(vreg, mmu);
@@ -565,7 +566,7 @@ impl Cpu {
                 self.registers.set_flag(Flags::H, false);
                 self.registers.set_flag(Flags::N, false);
                 self.registers
-                    .set_flag(Flags::C, self.registers.get_flag(Flags::C));
+                    .set_flag(Flags::C, !self.registers.get_flag(Flags::C));
             }
             Opcode::AddHLSP => {
                 let hl = self.registers.hl();
@@ -578,19 +579,17 @@ impl Cpu {
                 self.registers.set_hl(hl.wrapping_add(value));
             }
             Opcode::AddSPe8 => {
-                let offset = mmu.read_8(self.registers.pc + 1) as i8;
+                let e = mmu.read_8(self.registers.pc + 1) as i8;
                 let sp = self.registers.sp;
 
-                let unsigned = offset as u16;
+                let result = (sp as i32 + e as i32) as u16;
 
                 self.registers.set_flag(Flags::Z, false);
                 self.registers.set_flag(Flags::N, false);
-                self.registers
-                    .set_flag(Flags::H, ((sp & 0x000F) + (unsigned & 0x000F)) > 0x000F);
-                self.registers
-                    .set_flag(Flags::C, ((sp & 0x00FF) + (unsigned & 0x00FF)) > 0x00FF);
+                self.registers.set_flag(Flags::H, ((sp & 0xF) + ((e as u16) & 0xF)) > 0xF);
+                self.registers.set_flag(Flags::C, ((sp & 0xFF) + ((e as u16) & 0xFF)) > 0xFF);
 
-                self.registers.sp = sp.wrapping_add(unsigned);
+                self.registers.sp = result;
             }
             Opcode::LdHLSPe8 => {
                 let offset = mmu.read_8(self.registers.pc + 1) as i8;
@@ -649,7 +648,35 @@ impl Cpu {
             Opcode::Halt => {
                 // TODO: calls to interrupt controller
             }
-            Opcode::Daa => {}
+            Opcode::Daa => {
+                let mut a = self.registers.a;
+                let mut adjust = 0;
+                let mut carry = self.registers.get_flag(Flags::C);
+
+                if !self.registers.get_flag(Flags::N) {
+                    if self.registers.get_flag(Flags::H) || (a & 0x0F) > 9 {
+                        adjust |= 0x06;
+                    }
+                    if carry || a > 0x99 {
+                        adjust |= 0x60;
+                        carry = true;
+                    }
+                    a = a.wrapping_add(adjust);
+                } else {
+                    if self.registers.get_flag(Flags::H) {
+                        adjust |= 0x06;
+                    }
+                    if carry {
+                        adjust |= 0x60;
+                    }
+                    a = a.wrapping_sub(adjust);
+                }
+
+                self.registers.a = a;
+                self.registers.set_flag(Flags::Z, a == 0);
+                self.registers.set_flag(Flags::H, false);
+                self.registers.set_flag(Flags::C, carry);
+            }
             Opcode::Nop => {
                 // Nothing
             }
@@ -661,7 +688,8 @@ impl Cpu {
                 increment = false;
                 let opcode_byte = mmu.read_8(self.registers.pc.wrapping_add(1));
                 let entry = decode_cb(opcode_byte);
-                self.execute_instruction(entry, mmu);
+                self.registers.pc += 2;
+                self.execute_instruction(entry, mmu, false);
             }
         }
         if increment {

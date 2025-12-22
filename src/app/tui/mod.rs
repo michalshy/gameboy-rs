@@ -57,6 +57,10 @@ impl Tui {
         self.views[self.active].draw(&mut self.terminal, emulator);
     }
 
+    pub fn set_mode(&mut self, mode: EmulatorMode) {
+        self.emulator_mode = mode;
+    }
+
     pub fn mode(&self) -> &EmulatorMode {
         &self.emulator_mode
     }
