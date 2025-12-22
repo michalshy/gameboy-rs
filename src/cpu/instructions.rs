@@ -509,6 +509,7 @@ impl Cpu {
                 }
             }
             Opcode::JpHL => {
+                increment = false;
                 self.registers.pc = self.registers.hl();
             }
             Opcode::JpN16 => {
