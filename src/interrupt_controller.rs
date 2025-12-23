@@ -1,10 +1,10 @@
 pub struct InterruptController {
+    pub iflag: u8,
     pub ie: u8,
-    pub _if: u8,
 }
 
 impl InterruptController {
     pub fn new() -> Self {
-        Self { ie: 0, _if: 0 }
+        Self { iflag: 0, ie: 0 }
     }
 }

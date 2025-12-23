@@ -4,7 +4,7 @@ pub mod memory;
 use std::io::Error;
 
 use crate::{
-    apu::Apu, interrupts::InterruptController, joypad::Joypad, ppu::Ppu, serial::SerialPort,
+    apu::Apu, interrupt_controller::InterruptController, joypad::Joypad, ppu::Ppu, serial::SerialPort,
     timer::Timer,
 };
 use cartridge::Cartridge;
@@ -79,7 +79,7 @@ impl Mmu {
             0xFF00 => self.joypad.read_reg(),
             0xFF01..=0xFF02 => self.serial.read_reg(addr),
             0xFF04..=0xFF07 => self.timer.read_reg(addr),
-            0xFF0F => self.interrupts._if,
+            0xFF0F => self.interrupts.iflag,
             0xFF10..=0xFF3F => self.apu.read_reg(addr),
             0xFF40..=0xFF4B => self.ppu.read_reg(addr),
             0xFF80..=0xFFFE => self.read_hram(addr),
@@ -100,7 +100,7 @@ impl Mmu {
             0xFF00 => self.joypad.write_reg(value),
             0xFF01..=0xFF02 => self.serial.write_reg(addr, value),
             0xFF04..=0xFF07 => self.timer.write_reg(addr, value),
-            0xFF0F => self.interrupts._if = value,
+            0xFF0F => self.interrupts.iflag = value,
             0xFF10..=0xFF3F => self.apu.write_reg(addr, value),
             0xFF40..=0xFF4B => self.ppu.write_reg(addr, value),
             0xFF68..=0xFF69 => self.ppu.write_reg(addr, value),
@@ -108,7 +108,7 @@ impl Mmu {
             0xFF80..=0xFFFE => self.write_hram(addr, value),
             0xFFFF => self.interrupts.ie = value,
             _ => {
-                panic!("Memory access violation!");
+                // stub, TODO: add logging?
             }
         }
     }

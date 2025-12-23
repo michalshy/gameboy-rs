@@ -6,7 +6,7 @@ use crate::emulator::Emulator;
 use tui::{EmulatorMode, Tui};
 
 pub fn run() {
-    let instructions_per_tick: usize = 10_000; // TODO: Proper handle
+    let instructions_per_tick: usize = 100_000; // TODO: Proper handle
     // let instructions_per_tick: usize = 1000; // TODO: Proper handle
     let mut tui = Tui::new();
     let mut emulator = Emulator::new();

@@ -96,6 +96,7 @@ impl Cpu {
 
     pub fn execute_instruction(&mut self, entry: &OpcodeEntry, mmu: &mut Mmu, increment: bool) {
         let mut increment = increment;
+        let set_ime = self.interrupts.ime_scheduled;
         self.instruction_number += 1;
         match &entry.opcode {
             Opcode::LdR8R8(reg, vreg) => {
@@ -548,7 +549,7 @@ impl Cpu {
                 }
             }
             Opcode::RetI => {
-                self.int.ime = true;
+                self.interrupts.set_ime();
                 self.registers.pc = self.pop_u16(mmu);
                 increment = false;
             }
@@ -643,13 +644,13 @@ impl Cpu {
                 self.push_u16(mmu, value);
             }
             Opcode::Di => {
-                self.int.ime = false;
+                self.interrupts.reset_ime();
             }
             Opcode::Ei => {
-                self.int.ime_scheduled = true;
+                self.interrupts.ime_scheduled = true;
             }
             Opcode::Halt => {
-                // TODO: calls to interrupt controller
+                self.interrupts.halted = true;
             }
             Opcode::Daa => {
                 let mut a = self.registers.a;
@@ -697,6 +698,9 @@ impl Cpu {
         }
         if increment {
             self.increment_pc(entry.length as u16);
+        }
+        if set_ime {
+            self.interrupts.set_ime();
         }
     }
 }

@@ -4,7 +4,7 @@ use crate::{
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Paragraph, Wrap},
 };
 
 pub struct InfoView;
@@ -90,9 +90,11 @@ impl Widget for InfoView {
 
         frame.render_widget(
             Paragraph::new(serial_output.as_str())
+                .wrap(Wrap { trim: false })
                 .block(Block::default().title("Serial").borders(Borders::ALL)),
             row0[0],
         );
+
 
         frame.render_widget(
             Paragraph::new(cpu_info).block(Block::default().title("CPU").borders(Borders::ALL)),

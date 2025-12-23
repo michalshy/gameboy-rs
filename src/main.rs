@@ -3,7 +3,7 @@ mod apu;
 mod cpu;
 mod debug;
 mod emulator;
-mod interrupts;
+mod interrupt_controller;
 mod joypad;
 mod mmu;
 mod ppu;

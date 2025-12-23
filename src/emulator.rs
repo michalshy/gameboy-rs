@@ -3,7 +3,7 @@ use std::io::Error;
 use crate::apu::Apu;
 use crate::cpu::Cpu;
 use crate::debug::Debug;
-use crate::interrupts::InterruptController;
+use crate::interrupt_controller::InterruptController;
 use crate::joypad::Joypad;
 use crate::mmu::Mmu;
 use crate::mmu::memory::Memory;

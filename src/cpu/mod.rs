@@ -16,7 +16,7 @@ use crate::{
 
 pub struct Cpu {
     pub registers: Registers,
-    pub int: Interrupts,
+    pub interrupts: Interrupts,
     pub history: Vec<String>,
     pub instruction_number: u128,
 }
@@ -25,7 +25,7 @@ impl Cpu {
     pub fn new() -> Self {
         Self {
             registers: Registers::new(),
-            int: Interrupts::new(),
+            interrupts: Interrupts::new(),
             history: Vec::new(),
             instruction_number: 0,
         }
