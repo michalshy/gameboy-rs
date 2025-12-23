@@ -4,8 +4,8 @@ pub mod memory;
 use std::io::Error;
 
 use crate::{
-    apu::Apu, interrupt_controller::InterruptController, joypad::Joypad, ppu::Ppu, serial::SerialPort,
-    timer::Timer,
+    apu::Apu, interrupt_controller::InterruptController, joypad::Joypad, ppu::Ppu,
+    serial::SerialPort, timer::Timer,
 };
 use cartridge::Cartridge;
 use memory::Memory;
@@ -100,7 +100,7 @@ impl Mmu {
             0xFF00 => self.joypad.write_reg(value),
             0xFF01..=0xFF02 => self.serial.write_reg(addr, value),
             0xFF04..=0xFF07 => self.timer.write_reg(addr, value),
-            0xFF0F => self.interrupts.iflag = value,
+            0xFF0F => self.interrupts.iflag = value | 0b1110_0000,
             0xFF10..=0xFF3F => self.apu.write_reg(addr, value),
             0xFF40..=0xFF4B => self.ppu.write_reg(addr, value),
             0xFF68..=0xFF69 => self.ppu.write_reg(addr, value),

@@ -95,7 +95,6 @@ impl Widget for InfoView {
             row0[0],
         );
 
-
         frame.render_widget(
             Paragraph::new(cpu_info).block(Block::default().title("CPU").borders(Borders::ALL)),
             row0[1],

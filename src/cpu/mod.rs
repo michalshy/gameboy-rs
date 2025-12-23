@@ -11,6 +11,7 @@ use std::{fs::File, io::Error};
 use crate::{
     cpu::{decoder::OpcodeEntry, interrupts::Interrupts},
     debug::{Debug, disasm::disassemble},
+    interrupt_controller::Interrupt,
     mmu::Mmu,
 };
 
@@ -32,10 +33,20 @@ impl Cpu {
     }
 
     pub fn step(&mut self, mmu: &mut Mmu, debug: &Debug) -> u32 {
+        if self.interrupts.ime_scheduled {
+            self.interrupts.set_ime();
+        }
+
+        if self.interrupts.ime {
+            if let Some(irq) = mmu.interrupts.highest() {
+                mmu.interrupts.ack(&irq);
+                self.service_interrupt(irq, mmu);
+                return 0;
+            }
+        }
+
         let opcode_byte = mmu.read_8(self.registers.pc);
-
         let entry = decode(opcode_byte);
-
         self.execute_instruction(entry, mmu, true);
 
         if debug.log_cpu {
@@ -58,5 +69,15 @@ impl Cpu {
         }
 
         Ok(())
+    }
+
+    fn service_interrupt(&mut self, irq: Interrupt, mmu: &mut Mmu) {
+        self.interrupts.ime = false;
+        self.interrupts.ime_scheduled = false;
+        self.interrupts.halted = false;
+
+        let pc = self.registers.pc;
+        self.push_u16(mmu, pc);
+        self.registers.pc = irq.vector();
     }
 }

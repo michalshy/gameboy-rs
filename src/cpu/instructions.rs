@@ -74,7 +74,7 @@ impl Cpu {
         value
     }
 
-    fn push_u16(&mut self, mmu: &mut Mmu, value: u16) {
+    pub fn push_u16(&mut self, mmu: &mut Mmu, value: u16) {
         self.push_u8(mmu, (value >> 8) as u8);
         self.push_u8(mmu, value as u8);
     }
@@ -96,7 +96,6 @@ impl Cpu {
 
     pub fn execute_instruction(&mut self, entry: &OpcodeEntry, mmu: &mut Mmu, increment: bool) {
         let mut increment = increment;
-        let set_ime = self.interrupts.ime_scheduled;
         self.instruction_number += 1;
         match &entry.opcode {
             Opcode::LdR8R8(reg, vreg) => {
@@ -698,9 +697,6 @@ impl Cpu {
         }
         if increment {
             self.increment_pc(entry.length as u16);
-        }
-        if set_ime {
-            self.interrupts.set_ime();
         }
     }
 }
