@@ -37,20 +37,31 @@ impl Cpu {
             self.interrupts.set_ime();
         }
 
-        if self.interrupts.ime {
-            if let Some(irq) = mmu.interrupts.highest() {
-                mmu.interrupts.ack(&irq);
-                self.service_interrupt(irq, mmu);
-                return 0;
+        if self.interrupts.halted {
+            if mmu.interrupts.pending_mask() != 0 {
+                self.interrupts.halted = false;
             }
+
+            return 4;
+        }
+
+        if self.interrupts.ime
+            && let Some(irq) = mmu.interrupts.highest()
+        {
+            mmu.interrupts.ack(irq);
+            self.service_interrupt(irq, mmu);
+            return 20;
         }
 
         let opcode_byte = mmu.read_8(self.registers.pc);
         let entry = decode(opcode_byte);
-        self.execute_instruction(entry, mmu, true);
 
         if debug.log_cpu {
-            self.history.push(disassemble(&entry.opcode));
+            self.history.push(disassemble(&entry.opcode, mmu, self));
+        }
+
+        if self.execute_instruction(entry, mmu, true) {
+            self.increment_pc(entry.length as u16);
         }
 
         entry.cycles as u32

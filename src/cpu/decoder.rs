@@ -1139,7 +1139,7 @@ static LOOKUP: [OpcodeEntry; 256] = [
         cycles: 12,
     }, // 0xE1 POP HL
     OpcodeEntry {
-        opcode: Opcode::LdHAPtrC,
+        opcode: Opcode::LdHPtrCA,
         length: 1,
         cycles: 8,
     }, // 0xE2 LD (0xFF00+C), A
@@ -2848,7 +2848,7 @@ mod tests {
         assert!(matches!(
             e2,
             &OpcodeEntry {
-                opcode: Opcode::LdHAPtrC,
+                opcode: Opcode::LdHPtrCA,
                 length: 1,
                 cycles: 8
             }

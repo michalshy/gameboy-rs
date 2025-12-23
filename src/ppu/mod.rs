@@ -39,7 +39,7 @@ impl Ppu {
         }
     }
 
-    pub fn tick(&mut self, cycles: &u32) {
+    pub fn tick(&mut self, cycles: u32) {
         self.dot_counter += cycles;
 
         if self.dot_counter >= 456 {

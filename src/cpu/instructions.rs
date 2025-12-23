@@ -5,7 +5,7 @@ use crate::cpu::registers::Flags;
 use crate::mmu::{HIGH_RAM, Mmu};
 
 impl Cpu {
-    fn increment_pc(&mut self, v: u16) {
+    pub fn increment_pc(&mut self, v: u16) {
         self.registers.pc += v;
     }
 
@@ -94,7 +94,12 @@ impl Cpu {
         }
     }
 
-    pub fn execute_instruction(&mut self, entry: &OpcodeEntry, mmu: &mut Mmu, increment: bool) {
+    pub fn execute_instruction(
+        &mut self,
+        entry: &OpcodeEntry,
+        mmu: &mut Mmu,
+        increment: bool,
+    ) -> bool {
         let mut increment = increment;
         self.instruction_number += 1;
         match &entry.opcode {
@@ -683,7 +688,9 @@ impl Cpu {
             Opcode::Nop => {
                 // Nothing
             }
-            Opcode::Stop => {}
+            Opcode::Stop => {
+                mmu.timer.reset_div();
+            }
             Opcode::Undefined => {
                 // Undefined
             }
@@ -695,8 +702,6 @@ impl Cpu {
                 self.execute_instruction(entry, mmu, false);
             }
         }
-        if increment {
-            self.increment_pc(entry.length as u16);
-        }
+        increment
     }
 }

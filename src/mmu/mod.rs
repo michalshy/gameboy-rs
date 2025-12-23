@@ -100,7 +100,7 @@ impl Mmu {
             0xFF00 => self.joypad.write_reg(value),
             0xFF01..=0xFF02 => self.serial.write_reg(addr, value),
             0xFF04..=0xFF07 => self.timer.write_reg(addr, value),
-            0xFF0F => self.interrupts.iflag = value | 0b1110_0000,
+            0xFF0F => self.interrupts.iflag = (value & 0x1F) | 0xE0,
             0xFF10..=0xFF3F => self.apu.write_reg(addr, value),
             0xFF40..=0xFF4B => self.ppu.write_reg(addr, value),
             0xFF68..=0xFF69 => self.ppu.write_reg(addr, value),
@@ -126,8 +126,9 @@ impl Mmu {
     //     self.write_8(addr.wrapping_add(1), hi);
     // }
 
-    pub fn tick(&mut self, cycles: &u32) {
-        self.ppu.tick(cycles)
+    pub fn tick(&mut self, cycles: u32) {
+        self.ppu.tick(cycles);
+        self.timer.tick(cycles, &mut self.interrupts);
     }
 
     pub fn load_rom(&mut self, path: &str) -> Result<(), Error> {

@@ -49,7 +49,7 @@ impl Emulator {
     pub fn tick(&mut self) -> u32 {
         let cycles = self.cpu.step(&mut self.mmu, &self.debug);
 
-        self.mmu.tick(&cycles);
+        self.mmu.tick(cycles);
 
         cycles
     }

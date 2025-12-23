@@ -35,7 +35,7 @@ pub struct InterruptController {
 
 impl InterruptController {
     pub fn new() -> Self {
-        Self { iflag: 0, ie: 0 }
+        Self { iflag: 0xE1, ie: 0 }
     }
 
     pub fn highest(&self) -> Option<Interrupt> {
@@ -59,7 +59,16 @@ impl InterruptController {
         }
     }
 
-    pub fn ack(&mut self, irq: &Interrupt) {
-        self.iflag &= !irq.bit();
+    pub fn ack(&mut self, irq: Interrupt) {
+        self.iflag = (self.iflag & !irq.bit()) | 0xE0;
+    }
+
+    pub fn request(&mut self, irq: Interrupt) {
+        self.iflag |= irq.bit();
+        self.iflag |= 0xE0;
+    }
+
+    pub fn pending_mask(&self) -> u8 {
+        self.iflag & self.ie & 0x1F
     }
 }

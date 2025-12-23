@@ -60,7 +60,7 @@ impl Widget for InfoView {
                 mmu.read_8(cpu.registers.pc),
                 mmu.read_8(cpu.registers.pc + 1),
                 mmu.read_8(cpu.registers.pc + 2),
-                disassemble(&cpu.get_current_opcode(mmu).opcode),
+                disassemble(&cpu.get_current_opcode(mmu).opcode, mmu, cpu),
             )
         } else {
             "No cartridge loaded".to_string()

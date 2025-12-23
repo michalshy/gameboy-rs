@@ -1,5 +1,7 @@
+use crate::cpu::Cpu;
 use crate::cpu::decoder::Opcode;
 use crate::cpu::decoder::{CC, R8, R16};
+use crate::mmu::Mmu;
 
 impl R8 {
     fn name(&self) -> &'static str {
@@ -40,22 +42,22 @@ impl CC {
     }
 }
 
-pub fn disassemble(opcode: &Opcode) -> String {
+pub fn disassemble(opcode: &Opcode, mmu: &Mmu, cpu: &Cpu) -> String {
     match opcode {
         Opcode::Nop => "NOP".into(),
         Opcode::Stop => "STOP".into(),
         Opcode::Halt => "HALT".into(),
         Opcode::Prefix => "PREFIX CB".into(),
         Opcode::LdR8R8(dst, src) => format!("LD {},{}", dst.name(), src.name()),
-        Opcode::LdR8N8(r) => format!("LD {},n", r.name()),
+        Opcode::LdR8N8(r) => format!("LD {},{:02x}", r.name(), mmu.read_8(cpu.registers.pc)),
         Opcode::LdR16N16(r) => format!("LD {},nn", r.name()),
         Opcode::LdPtrR16A(r) => format!("LD ({}),A", r.name()),
         Opcode::LdPtrN16A => "LD (nn),A".into(),
         Opcode::LdAPtrR16(r) => format!("LD A,({})", r.name()),
         Opcode::LdAPtrN16 => "LD A,(nn)".into(),
         Opcode::LdHAPtrC => "LD A,(0xFF00+C)".into(),
-        Opcode::LDHAPtrN8 => "LD A,(0xFF00+n)".into(),
-        Opcode::LDHPtrN8A => "LD (0xFF00+n),A".into(),
+        Opcode::LDHAPtrN8 => format!("LD A,(0xFF00+{:02x})", mmu.read_8(cpu.registers.pc)),
+        Opcode::LDHPtrN8A => format!("LD (0xFF00+{:02x}),A", mmu.read_8(cpu.registers.pc)),
         Opcode::LdPtrHLIncA => "LD (HL+),A".into(),
         Opcode::LdPtrHLDecA => "LD (HL-),A".into(),
         Opcode::LdAPtrHLInc => "LD A,(HL+)".into(),
