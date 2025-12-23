@@ -1,139 +1,149 @@
-# gameboy-rs
+# ❯ gameboy-rs
 
-A Game Boy emulator written in Rust, focused on clear architecture and incremental correctness rather than completeness or performance.
-The project serves as a learning-oriented emulator core with a simple command-line interface and debugging tools.
+*A Game Boy emulator written in Rust, focused on correctness, modularity, and an interactive terminal-based debugging experience.*
 
-## Status
+---
 
-This project is a work in progress.
+## Overview
 
-Core components such as the CPU, memory system, cartridge handling, and debugging infrastructure are partially implemented. Graphics and audio subsystems are currently incomplete or stubbed.
+**gameboy-rs** is a work-in-progress Nintendo Game Boy emulator implemented in Rust.  
+It emulates the original Game Boy hardware, including CPU, MMU, PPU, APU, timers, interrupts, and cartridge memory controllers.  
+The project places special emphasis on **debugging and introspection**, offering a rich terminal user interface (TUI) for stepping through execution, inspecting memory, registers, and instruction history.
 
-## Goals
+This project is intended for:
+- Learning emulator development
+- Exploring Game Boy hardware internals
+- Experimenting with Rust for low-level systems programming
 
-The main goals of this project are:
-
-- Provide a readable and modular Game Boy emulator architecture
-- Incrementally implement accurate hardware behavior
-- Offer debugging and inspection tools useful for emulator development
-- Serve as a reference or learning project for Rust and emulator design
+---
 
 ## Features
 
-Currently implemented or partially implemented features include:
+| Area | Description |
+|---|---|
+| ⚙️ Architecture | Fully modular design with clear separation between CPU, MMU, PPU, APU, and peripherals |
+| 🧠 CPU | Implements the Game Boy LR35902 instruction set, decoding, execution, and interrupt handling |
+| 🖥️ PPU | Emulates Game Boy graphics pipeline and framebuffer rendering |
+| 🔊 APU | Partial audio processing unit implementation with channel abstractions |
+| 🎮 Input | Joypad emulation with register-level accuracy |
+| 🧪 Debugging | Breakpoints, instruction history, disassembly, logging |
+| 🖥️ TUI | Interactive terminal UI using `ratatui` and `crossterm` |
+| 📦 Cartridges | Supports multiple MBC types (NoMBC, MBC1, MBC2, MBC3, MBC5) |
+| 🤖 CI | GitHub Actions workflow for build, test, clippy, and formatting |
 
-- CPU (LR35902)
-  - Instruction decoding
-  - Register file
-  - Opcode execution logic (in progress)
-- Memory Management Unit (MMU)
-  - Memory mapping for ROM, RAM, VRAM, OAM, HRAM
-  - Cartridge loading
-  - Basic MBC support scaffolding
-- Cartridge handling
-  - ROM parsing
-  - Header inspection
-- Debugging utilities
-  - Disassembler
-  - Instruction logging
-- Command-line interface
-  - Interactive shell
-  - ROM loading and reset commands
+---
 
-Graphics (PPU) and audio (APU) are present as modules but are not yet fully implemented.
+## Project Structure
 
-## Building
-
-### Requirements
-
-- Rust (stable)
-
-Install Rust using rustup if it is not already installed:
-
-```sh
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+.
+├── src
+│   ├── app            # CLI and TUI frontend
+│   ├── apu            # Audio Processing Unit
+│   ├── cpu            # CPU core, decoder, registers, interrupts
+│   ├── debug          # Disassembler, logger, breakpoints
+│   ├── mmu            # Memory management and cartridges
+│   ├── ppu            # Graphics rendering
+│   ├── emulator.rs   # High-level emulator orchestration
+│   └── main.rs        # Application entry point
+├── roms               # Test ROMs and save files
+└── .github/workflows  # CI configuration
 ```
 
-### Build
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Rust** (stable)
+- **Cargo**
+
+Install Rust via https://www.rust-lang.org/tools/install
+
+---
+
+### Installation
 
 Clone the repository and build the project:
 
 ```sh
-git clone https://github.com/michalshy/gameboy-rs.git
+git clone https://github.com/michalshy/gameboy-rs
 cd gameboy-rs
 cargo build
 ```
 
-## Running
+---
 
-Run the emulator using:
+### Usage
+
+Run the emulator:
 
 ```sh
 cargo run
 ```
 
-This starts an interactive command-line shell.
+You can load ROMs via the interactive shell inside the TUI.  
+The interface supports stepping, continuous execution, breakpoints, memory inspection, and CPU state visualization.
 
-## Minimal Usage
+---
 
-Load a Game Boy ROM from the shell:
+### Testing
 
-```text
-load-rom path/to/rom.gb
+Run the full test suite:
+
+```sh
+cargo test
 ```
 
-Reset the emulator state:
+CI runs:
+- `cargo build`
+- `cargo test`
+- `cargo clippy`
+- `cargo fmt --check`
 
-```text
-reset
-```
+across Linux, macOS, and Windows.
 
-Quit the shell:
+---
 
-```text
-exit
-```
+## Roadmap
 
-The shell is intended for debugging and development rather than gameplay.
+- [x] CPU core and instruction decoding
+- [x] MMU and cartridge support
+- [x] Terminal-based debugger (TUI)
+- [ ] Improve PPU accuracy and timing
+- [ ] Complete APU sound output
+- [ ] Save-state support
+- [ ] Performance optimizations
+- [ ] WebAssembly frontend (stretch goal)
 
-## Test ROMs
-
-The repository contains test ROMs (such as CPU instruction tests) used to validate correctness during development. These are useful for verifying opcode behavior and flag handling.
-
-## Design Philosophy
-
-- Prefer explicit and readable code over clever optimizations
-- Keep emulator subsystems loosely coupled
-- Make hardware behavior easy to inspect and debug
-- Accept partial implementations as long as structure is correct
-
-Accuracy and completeness are secondary to clarity at the current stage of development.
-
-## Future Work
-
-Planned or potential improvements include:
-
-- Full CPU instruction coverage with cycle accuracy
-- Complete PPU rendering pipeline
-- Audio (APU) implementation
-- More comprehensive cartridge and MBC support
-- Improved debugging tools
-- Optional graphical or web-based frontends
+---
 
 ## Contributing
 
-Contributions are welcome.
+Contributions are welcome!
 
-If you plan to contribute:
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes with clear messages
+4. Open a pull request
 
-- Keep changes focused and well-scoped
-- Add tests for CPU instructions and edge cases where applicable
-- Document any known inaccuracies or hardware deviations
+Please ensure:
+- Code is formatted with `cargo fmt`
+- No new clippy warnings are introduced
+- Tests pass
+
+---
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the **MIT License**.  
+See the [LICENSE](LICENSE) file for details.
 
-## About
+---
 
-`gameboy-rs` is a personal emulator project written in Rust, intended for learning, experimentation, and exploration of emulator internals and low-level system design.
+## Acknowledgments
+
+- Pan Docs – Game Boy hardware documentation
+- Other open-source Game Boy emulator projects
+- Rust community for excellent tooling and libraries
