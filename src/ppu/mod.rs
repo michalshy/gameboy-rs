@@ -1,6 +1,8 @@
 pub mod registers;
 pub mod renderer;
 
+use renderer::Framebuffer;
+
 pub struct Ppu {
     pub ly: u8,
     pub lyc: u8,
@@ -17,6 +19,7 @@ pub struct Ppu {
     pub wx: u8,
     pub bcps: u8,
     pub bcpd: u8,
+    pub framebuffer: Framebuffer,
 }
 
 impl Ppu {
@@ -36,6 +39,9 @@ impl Ppu {
             wx: 0,
             bcps: 0,
             bcpd: 0,
+            framebuffer: Framebuffer {
+                pixels: [0u8; 23040],
+            },
         }
     }
 

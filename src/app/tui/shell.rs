@@ -23,7 +23,6 @@ impl View for ShellView {
             .draw(|frame| {
                 let area = frame.size();
 
-                // Split vertically: header | history | input
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints([
@@ -33,7 +32,6 @@ impl View for ShellView {
                     ])
                     .split(area);
 
-                // -------- HEADER --------
                 let cwd = env::current_dir()
                     .map(|p| p.display().to_string())
                     .unwrap_or("<unknown>".into());
@@ -43,13 +41,11 @@ impl View for ShellView {
 
                 frame.render_widget(Paragraph::new(header_lines), chunks[0]);
 
-                // -------- HISTORY --------
                 let history_lines: Vec<Line> =
                     self.history.iter().map(|s| Line::from(s.clone())).collect();
 
                 frame.render_widget(Paragraph::new(history_lines), chunks[1]);
 
-                // -------- INPUT LINE --------
                 let input = Paragraph::new(format!("> {}", self.buffer))
                     .style(Style::default().fg(Color::Yellow));
 

@@ -15,6 +15,7 @@ pub fn run() {
 
     loop {
         logic(&mut emulator, &mut tui, instructions_per_tick);
+
         tui.draw(&emulator);
         if !tui.poll(&mut emulator) {
             break;
