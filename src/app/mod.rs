@@ -15,6 +15,16 @@ pub fn run() {
 
     loop {
         logic(&mut emulator, &mut tui, instructions_per_tick);
+        for tile_y in 0..18 {
+            for tile_x in 0..20 {
+                let tile_index = tile_y * 20 + tile_x;
+
+                let screen_x = tile_x * 8;
+                let screen_y = tile_y * 8;
+
+                emulator.render_single_tile(tile_index as u16, screen_x, screen_y);
+            }
+        }
 
         tui.draw(&emulator);
         if !tui.poll(&mut emulator) {

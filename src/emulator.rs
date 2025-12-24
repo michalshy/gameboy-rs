@@ -47,8 +47,6 @@ impl Emulator {
     }
 
     pub fn tick(&mut self) -> u32 {
-        self.render_single_tile(0, 0, 0);
-
         let cycles = self.cpu.step(&mut self.mmu, &self.debug);
 
         self.mmu.tick(cycles);

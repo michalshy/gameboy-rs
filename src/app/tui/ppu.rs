@@ -40,8 +40,7 @@ impl View for PpuView {
                 }
 
                 let paragraph = Paragraph::new(lines)
-                    .block(Block::default().title("PPU").borders(Borders::ALL))
-                    .wrap(Wrap { trim: false });
+                    .block(Block::default().title("PPU").borders(Borders::ALL));
 
                 f.render_widget(paragraph, area);
             })
