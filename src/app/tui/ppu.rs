@@ -15,7 +15,6 @@ fn pixel_to_char(v: u8) -> char {
         _ => '?',
     }
 }
-
 pub struct PpuView;
 
 impl View for PpuView {

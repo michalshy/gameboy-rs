@@ -83,24 +83,4 @@ impl Emulator {
         }
         false
     }
-
-    pub fn render_single_tile(&mut self, tile_index: u16, screen_x: usize, screen_y: usize) {
-        let tile_addr = 0x8000 + tile_index * 16;
-
-        for row in 0..8 {
-            let lo = &self.mmu.read_8(tile_addr + row * 2);
-            let hi = &self.mmu.read_8(tile_addr + row * 2 + 1);
-
-            for col in 0..8 {
-                let bit = 7 - col;
-                let low_bit = (lo >> bit) & 1;
-                let high_bit = (hi >> bit) & 1;
-
-                let color = (high_bit << 1) | low_bit; // 0..3
-
-                let fb = &mut self.mmu.ppu.framebuffer;
-                fb.set(screen_x + col as usize, screen_y + row as usize, color);
-            }
-        }
-    }
 }
