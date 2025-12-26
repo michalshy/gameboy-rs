@@ -119,13 +119,6 @@ impl Mmu {
         hi << 8 | lo
     }
 
-    // pub fn write_16(&mut self, addr: u16, value: u16) {
-    //     let lo = (value & 0x00FF) as u8;
-    //     let hi = (value >> 8) as u8;
-    //     self.write_8(addr, lo);
-    //     self.write_8(addr.wrapping_add(1), hi);
-    // }
-
     pub fn tick(&mut self, cycles: u32) {
         self.ppu.tick(cycles, &self.memory.vram);
         self.timer.tick(cycles, &mut self.interrupts);

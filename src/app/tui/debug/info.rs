@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use crate::{
     app::tui::debug::Widget, cpu::registers::Flags, debug::disasm::disassemble, emulator::Emulator,
 };
@@ -38,11 +40,19 @@ impl Widget for InfoView {
             cpu.registers.get_flag(Flags::C) as u8,
         );
 
-        let cartridge_info = if let Some(cart) = &mmu.cartridge {
+        let instruction_info = if let Some(cart) = &mmu.cartridge {
             format!(
-                "ROM Size: {} KB\n\
+                "Byte:      0x{:02X}\n\
+                Byte + 1:  0x{:02X}\n\
+                Byte + 2:  0x{:02X}\n\
+                Opcode:    {}\n\
+                ROM Size: {} KB\n\
                 RAM Size: {} KB\n\
                 MBC Type: {}",
+                mmu.read_8(cpu.registers.pc),
+                mmu.read_8(cpu.registers.pc + 1),
+                mmu.read_8(cpu.registers.pc + 2),
+                disassemble(&cpu.get_current_opcode(mmu).opcode, mmu, cpu),
                 cart.rom.len() / 1024,
                 cart.ram.len() / 1024,
                 cart.mbc.name()
@@ -51,20 +61,10 @@ impl Widget for InfoView {
             "No cartridge loaded".to_string()
         };
 
-        let instruction_info = if mmu.cartridge.is_some() {
-            format!(
-                "Byte:      0x{:02X}\n\
-                Byte + 1:  0x{:02X}\n\
-                Byte + 2:  0x{:02X}\n\
-                Opcode:    {}",
-                mmu.read_8(cpu.registers.pc),
-                mmu.read_8(cpu.registers.pc + 1),
-                mmu.read_8(cpu.registers.pc + 2),
-                disassemble(&cpu.get_current_opcode(mmu).opcode, mmu, cpu),
-            )
-        } else {
-            "No cartridge loaded".to_string()
-        };
+        let ppu_info = format!(
+            "Complete: {}\n",
+            mmu.ppu.complete
+        );
 
         let serial_output = &mmu.serial.output;
 
@@ -107,8 +107,8 @@ impl Widget for InfoView {
         );
 
         frame.render_widget(
-            Paragraph::new(cartridge_info)
-                .block(Block::default().title("Cartridge").borders(Borders::ALL)),
+            Paragraph::new(ppu_info)
+                .block(Block::default().title("PPU").borders(Borders::ALL)),
             row1[1],
         );
     }

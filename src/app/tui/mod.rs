@@ -53,7 +53,7 @@ impl Tui {
                 Box::new(PpuView::new()),
             ],
             active: 0,
-            emulator_mode: EmulatorMode::Step,
+            emulator_mode: EmulatorMode::Continuous,
             advance: false,
         }
     }

@@ -6,17 +6,14 @@ use crate::emulator::Emulator;
 use tui::{EmulatorMode, Tui};
 
 pub fn run() {
-    let instructions_per_tick: usize = 10_000;
     let mut tui = Tui::new();
     let mut emulator = Emulator::new();
 
     handle_arguments(&mut emulator);
 
     loop {
-        logic(&mut emulator, &mut tui, instructions_per_tick);
-
-        tui.draw(&emulator);
-        if !tui.poll(&mut emulator) {
+        logic(&mut emulator, &mut tui);
+        if draw(&mut emulator, &mut tui) {
             break;
         }
     }
@@ -24,7 +21,7 @@ pub fn run() {
     tui.shutdown();
 }
 
-pub fn logic(emulator: &mut Emulator, tui: &mut Tui, per_tick: usize) {
+pub fn logic(emulator: &mut Emulator, tui: &mut Tui) {
     match tui.mode() {
         EmulatorMode::Step => {
             if tui.advance {
@@ -33,15 +30,32 @@ pub fn logic(emulator: &mut Emulator, tui: &mut Tui, per_tick: usize) {
             }
         }
         EmulatorMode::Continuous => {
-            for _ in 0..per_tick {
-                if emulator.check_breakpoint() {
-                    tui.set_mode(EmulatorMode::Step);
-                    break;
+            if emulator.check_breakpoint() {
+                tui.set_mode(EmulatorMode::Step);
+            }
+            emulator.tick();
+        }
+    }
+}
+
+pub fn draw(emulator: &mut Emulator, tui: &mut Tui) -> bool {
+    match tui.mode() {
+        EmulatorMode::Step => {
+            tui.draw(&emulator);
+            if !tui.poll(emulator) {
+                return true
+            }
+        }
+        EmulatorMode::Continuous => {
+            if emulator.draw_call() {
+                tui.draw(&emulator);
+                if !tui.poll(emulator) {
+                    return true
                 }
-                emulator.tick();
             }
         }
     }
+    false
 }
 
 pub fn handle_arguments(emulator: &mut Emulator) {

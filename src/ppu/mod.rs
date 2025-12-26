@@ -22,6 +22,7 @@ pub struct Ppu {
     pub framebuffer: Framebuffer,
     pub complete: bool,
     pub scanline_rendered: bool,
+    pub was_complete: bool,
 }
 
 impl Ppu {
@@ -46,27 +47,13 @@ impl Ppu {
             },
             complete: false,
             scanline_rendered: false,
+            was_complete: false,
         }
     }
 
     pub fn tick(&mut self, cycles: u32, vram: &[u8]) {
+        self.was_complete = self.complete;
         self.dot_counter += cycles;
-
-        if self.ly >= 144 {
-            self.set_mode(1);
-        } else {
-            match self.dot_counter {
-                0..=79 => self.set_mode(2),
-                80..=251 => self.set_mode(3),
-                252..=455 => self.set_mode(0),
-                _ => {}
-            }
-        }
-
-        if self.ly < 144 && self.mode() == 3 && !self.scanline_rendered {
-            self.render_scanline(vram);
-            self.scanline_rendered = true;
-        }
 
         if self.dot_counter >= 456 {
             self.dot_counter -= 456;
@@ -75,19 +62,52 @@ impl Ppu {
             self.scanline_rendered = false;
 
             if self.ly == 144 {
-                self.complete = true;
+                self.complete = true; // enter VBlank
             }
 
-            if self.ly == 154 {
+            if self.ly >= 154 {
                 self.ly = 0;
                 self.complete = false;
-                //self.framebuffer.pixels.fill(0);
+            }
+        }
+
+        if self.ly >= 144 {
+            self.set_mode(1); // VBlank
+            return;
+        }
+
+        match self.dot_counter {
+            0..=79 => {
+                self.set_mode(2); // OAM
+            }
+            80..=251 => {
+                self.set_mode(3); // Drawing
+                if !self.scanline_rendered {
+                    self.render_scanline(vram);
+                    self.scanline_rendered = true;
+                }
+            }
+            _ => {
+                self.set_mode(0); // HBlank
             }
         }
     }
 
-    pub fn read_reg(&self, _addr: u16) -> u8 {
-        self.ly
+    pub fn read_reg(&self, addr: u16) -> u8 {
+        match addr {
+            0xFF40 => self.lcdc,
+            0xFF41 => self.stat,
+            0xFF42 => self.scy,
+            0xFF43 => self.scx,
+            0xFF44 => self.ly,
+            0xFF45 => self.lyc,
+            0xFF47 => self.bgp,
+            0xFF48 => self.obp0,
+            0xFF49 => self.obp1,
+            0xFF4A => self.wy,
+            0xFF4B => self.wx,
+            _ => 0xFF,
+        }
     }
 
     pub fn write_reg(&mut self, addr: u16, value: u8) {
@@ -124,13 +144,6 @@ impl Ppu {
             0x9800
         };
 
-        // Select tile data area
-        let tile_data_base = if self.lcdc & 0x10 != 0 {
-            0x8000
-        } else {
-            0x8800
-        };
-
         for x in 0..160 {
             let scrolled_x = x + self.scx as usize;
             let scrolled_y = y.wrapping_add(self.scy as usize);
@@ -144,7 +157,13 @@ impl Ppu {
             let tile_index = vram[(tile_index_addr - 0x8000) as usize];
 
             // Handle signed tile indices (0x8800 mode)
-            let tile_addr = tile_data_base + tile_index as u16 * 16;
+            let tile_addr = if self.lcdc & 0x10 != 0 {
+                0x8000u16 + (tile_index as u16) * 16
+            } else {
+                let signed = tile_index as i8 as i32;
+                (0x9000i32 + signed * 16) as u16
+            };
+
 
             let row = scrolled_y % 8;
             let lo = vram[(tile_addr + row as u16 * 2 - 0x8000) as usize];
@@ -159,9 +178,5 @@ impl Ppu {
 
     fn set_mode(&mut self, mode: u8) {
         self.stat = (self.stat & !0x03) | (mode & 0x03);
-    }
-
-    fn mode(&self) -> u8 {
-        self.stat & 0x03
     }
 }

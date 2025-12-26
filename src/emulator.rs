@@ -83,4 +83,8 @@ impl Emulator {
         }
         false
     }
+
+    pub fn draw_call(&self) -> bool {
+        self.mmu.ppu.was_complete != self.mmu.ppu.complete
+    }
 }
