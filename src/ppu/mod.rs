@@ -43,7 +43,7 @@ impl Ppu {
             bcps: 0,
             bcpd: 0,
             framebuffer: Framebuffer {
-                pixels: [0u8; 23040],
+                pixels: [0u8; 160 * 144],
             },
             complete: false,
             scanline_rendered: false,
@@ -55,7 +55,7 @@ impl Ppu {
         self.was_complete = self.complete;
         self.dot_counter += cycles;
 
-        if self.dot_counter >= 456 {
+        while self.dot_counter >= 456 {
             self.dot_counter -= 456;
 
             self.ly = self.ly.wrapping_add(1);
@@ -172,7 +172,8 @@ impl Ppu {
             let bit = 7 - (scrolled_x % 8);
             let color = (((hi >> bit) & 1) << 1) | ((lo >> bit) & 1);
 
-            self.framebuffer.pixels[y * 160 + x] = color;
+            let shade = (self.bgp >> (color * 2)) & 0b11;
+            self.framebuffer.pixels[y * 160 + x] = shade;
         }
     }
 
