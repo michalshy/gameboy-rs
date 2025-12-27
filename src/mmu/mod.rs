@@ -120,7 +120,7 @@ impl Mmu {
     }
 
     pub fn tick(&mut self, cycles: u32) {
-        self.ppu.tick(cycles, &self.memory.vram);
+        self.ppu.tick(cycles, &self.memory.vram, &self.memory.oam);
         self.timer.tick(cycles, &mut self.interrupts);
     }
 

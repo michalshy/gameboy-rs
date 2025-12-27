@@ -51,7 +51,7 @@ impl Ppu {
         }
     }
 
-    pub fn tick(&mut self, cycles: u32, vram: &[u8]) {
+    pub fn tick(&mut self, cycles: u32, vram: &[u8], oam: &[u8]) {
         self.was_complete = self.complete;
         self.dot_counter += cycles;
 
@@ -61,7 +61,7 @@ impl Ppu {
             self.ly = self.ly.wrapping_add(1);
             self.scanline_rendered = false;
 
-            if self.ly == 144 {
+            if self.ly >= 144 && self.ly < 154 {
                 self.complete = true; // enter VBlank
             }
 
@@ -84,6 +84,7 @@ impl Ppu {
                 self.set_mode(3); // Drawing
                 if !self.scanline_rendered {
                     self.render_scanline(vram);
+                    self.render_sprites_scanline(vram, oam);
                     self.scanline_rendered = true;
                 }
             }
@@ -130,14 +131,12 @@ impl Ppu {
     }
 
     pub fn render_scanline(&mut self, vram: &[u8]) {
-        // BG disabled
         if self.lcdc & 0x01 == 0 {
             return;
         }
 
         let y = self.ly as usize;
 
-        // Select BG tile map
         let tile_map_base = if self.lcdc & 0x08 != 0 {
             0x9C00
         } else {
@@ -148,31 +147,109 @@ impl Ppu {
             let scrolled_x = x + self.scx as usize;
             let scrolled_y = y.wrapping_add(self.scy as usize);
 
-            let tile_x = scrolled_x / 8;
-            let tile_y = scrolled_y / 8;
+            let tile_x = (scrolled_x / 8) & 31;
+            let tile_y = (scrolled_y / 8) & 31;
 
             let tile_map_index = tile_y * 32 + tile_x;
             let tile_index_addr = tile_map_base + tile_map_index as u16;
 
             let tile_index = vram[(tile_index_addr - 0x8000) as usize];
 
-            // Handle signed tile indices (0x8800 mode)
             let tile_addr = if self.lcdc & 0x10 != 0 {
                 0x8000u16 + (tile_index as u16) * 16
             } else {
-                let signed = tile_index as i8 as i32;
-                (0x9000i32 + signed * 16) as u16
+                let index = tile_index as i8 as i16;
+                (0x9000i32 + ((index * 16) as i32)) as u16
             };
 
-            let row = scrolled_y % 8;
+            let row = (scrolled_y & 7) as u16;
             let lo = vram[(tile_addr + row as u16 * 2 - 0x8000) as usize];
             let hi = vram[(tile_addr + row as u16 * 2 + 1 - 0x8000) as usize];
 
-            let bit = 7 - (scrolled_x % 8);
+            let bit = 7 - (scrolled_x & 7);
             let color = (((hi >> bit) & 1) << 1) | ((lo >> bit) & 1);
 
             let shade = (self.bgp >> (color * 2)) & 0b11;
             self.framebuffer.pixels[y * 160 + x] = shade;
+        }
+    }
+
+    pub fn render_sprites_scanline(&mut self, vram: &[u8], oam: &[u8]) {
+        if self.lcdc & 0x02 == 0 {
+            return; // OBJ disabled
+        }
+
+        let sprite_height = if self.lcdc & 0x04 != 0 { 16 } else { 8 };
+        let y = self.ly as i16;
+
+        let mut sprites_drawn = 0;
+
+        for i in 0..40 {
+            if sprites_drawn >= 10 {
+                break; // hardware limit
+            }
+
+            let base = i * 4;
+            let oam_y = oam[base] as i16;
+            let oam_x = oam[base + 1] as i16;
+            let tile = oam[base + 2];
+            let attr = oam[base + 3];
+
+            let sprite_y = oam_y - 16;
+            let sprite_x = oam_x - 8;
+
+            if y < sprite_y || y >= sprite_y + sprite_height {
+                continue;
+            }
+
+            sprites_drawn += 1;
+
+            let mut row = (y - sprite_y) as u8;
+
+            let flip_y = attr & 0x40 != 0;
+            if flip_y {
+                row = (sprite_height as u8 - 1) - row;
+            }
+
+            let tile_index = if sprite_height == 16 {
+                tile & 0xFE
+            } else {
+                tile
+            };
+
+            let tile_index = tile_index + if sprite_height == 16 && row >= 8 { 1 } else { 0 };
+            let row = row & 7;
+
+            let tile_addr = 0x8000 + tile_index as u16 * 16;
+            let lo = vram[(tile_addr + row as u16 * 2 - 0x8000) as usize];
+            let hi = vram[(tile_addr + row as u16 * 2 + 1 - 0x8000) as usize];
+
+            let flip_x = attr & 0x20 != 0;
+            let palette = if attr & 0x10 != 0 { self.obp1 } else { self.obp0 };
+            let bg_priority = attr & 0x80 != 0;
+
+            for px in 0..8 {
+                let bit = if flip_x { px } else { 7 - px };
+                let color = (((hi >> bit) & 1) << 1) | ((lo >> bit) & 1);
+
+                if color == 0 {
+                    continue; // transparent
+                }
+
+                let screen_x = sprite_x + px as i16;
+                if screen_x < 0 || screen_x >= 160 {
+                    continue;
+                }
+
+                let idx = y as usize * 160 + screen_x as usize;
+
+                if bg_priority && self.framebuffer.pixels[idx] != 0 {
+                    continue;
+                }
+
+                let shade = (palette >> (color * 2)) & 0b11;
+                self.framebuffer.pixels[idx] = shade;
+            }
         }
     }
 
