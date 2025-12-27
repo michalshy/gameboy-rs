@@ -1,4 +1,5 @@
 mod debug;
+mod ppu;
 mod shell;
 use crate::app::tui::debug::DebugView;
 use crate::emulator::Emulator;
@@ -8,6 +9,7 @@ use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
+use ppu::PpuView;
 use ratatui::prelude::*;
 use shell::ShellView;
 use std::io::Stdout;
@@ -48,6 +50,7 @@ impl Tui {
             views: vec![
                 Box::new(DebugView::new()),
                 Box::new(ShellView::new()),
+                Box::new(PpuView::new()),
             ],
             active: 0,
             emulator_mode: EmulatorMode::Step,

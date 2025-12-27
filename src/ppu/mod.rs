@@ -164,7 +164,6 @@ impl Ppu {
                 (0x9000i32 + signed * 16) as u16
             };
 
-
             let row = scrolled_y % 8;
             let lo = vram[(tile_addr + row as u16 * 2 - 0x8000) as usize];
             let hi = vram[(tile_addr + row as u16 * 2 + 1 - 0x8000) as usize];

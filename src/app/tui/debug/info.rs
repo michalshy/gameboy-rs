@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use crate::{
     app::tui::debug::Widget, cpu::registers::Flags, debug::disasm::disassemble, emulator::Emulator,
 };
@@ -61,10 +59,7 @@ impl Widget for InfoView {
             "No cartridge loaded".to_string()
         };
 
-        let ppu_info = format!(
-            "Complete: {}\n",
-            mmu.ppu.complete
-        );
+        let ppu_info = format!("Complete: {}\n", mmu.ppu.complete);
 
         let serial_output = &mmu.serial.output;
 
@@ -107,8 +102,7 @@ impl Widget for InfoView {
         );
 
         frame.render_widget(
-            Paragraph::new(ppu_info)
-                .block(Block::default().title("PPU").borders(Borders::ALL)),
+            Paragraph::new(ppu_info).block(Block::default().title("PPU").borders(Borders::ALL)),
             row1[1],
         );
     }
