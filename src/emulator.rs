@@ -85,6 +85,6 @@ impl Emulator {
     }
 
     pub fn draw_call(&self) -> bool {
-        self.mmu.ppu.was_complete != self.mmu.ppu.complete
+        self.mmu.ppu.frame_ready()
     }
 }

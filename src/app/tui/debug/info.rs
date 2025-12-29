@@ -59,7 +59,8 @@ impl Widget for InfoView {
             "No cartridge loaded".to_string()
         };
 
-        let ppu_info = format!("Complete: {}\n", mmu.ppu.complete);
+        // let ppu_info = format!("Complete: {}\n", mmu.ppu.complete);
+        let ppu_info = format!("Complete: debug\n");
 
         let serial_output = &mmu.serial.output;
 
