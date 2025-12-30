@@ -1,5 +1,5 @@
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders, Paragraph};
+use ratatui::widgets::{Block, Borders};
 use std::io::Stdout;
 
 use crate::app::tui::View;
@@ -60,7 +60,7 @@ impl View for PpuView {
                         let top = fb[idx_top as usize];
                         let bottom = fb[idx_bot as usize];
 
-                        let ch = pixel_symbol(top, bottom);
+                        let ch = if top == bottom { "█" } else { "▀" };
                         let fg = gb_color(top);
                         let bg = gb_color(bottom);
 

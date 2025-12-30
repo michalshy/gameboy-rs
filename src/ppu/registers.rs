@@ -14,7 +14,7 @@ pub struct PpuRegisters {
 impl PpuRegisters {
     pub fn new() -> Self {
         Self {
-            lcdc: 0x91, // LCD on, BG on (safe default)
+            lcdc: 0x00, // LCD on, BG on (safe default)
             stat: 0x00,
             scy: 0,
             scx: 0,
