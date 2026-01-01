@@ -53,9 +53,7 @@ impl Ppu {
             self.mode = PpuMode::HBlank;
             self.ly = 0;
         } else {
-            if self.ly == 0 {
-
-            }
+            if self.ly == 0 {}
         }
 
         self.line_dots = self.line_dots.wrapping_add(1);
@@ -111,7 +109,7 @@ impl Ppu {
         let x = self.px_x as usize;
         let y = self.ly as usize;
         if x < 160 && y < 144 {
-        let color = self.bg_pixel(self.px_x, self.ly, vram);
+            let color = self.bg_pixel(self.px_x, self.ly, vram);
             self.framebuffer.pixels[y * 160 + x] = color;
         }
 
