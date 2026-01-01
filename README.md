@@ -4,6 +4,12 @@
 
 ---
 
+## Current state
+
+Project is functional in term of cpu and its tests, ppu implementation is not finished
+![alt text](docs/cpu.png)
+![alt text](docs/ppu.png)
+
 ## Overview
 
 **gameboy-rs** is a work-in-progress Nintendo Game Boy emulator implemented in Rust.  

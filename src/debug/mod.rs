@@ -23,4 +23,11 @@ impl Debug {
             "Added breakpoint".to_string()
         }
     }
+
+    // this breaks execution of the application, allows developer to put breakpoint
+    // inside code, but it stops execution in natural way
+    // with switch of execution type
+    pub fn break_execution(&mut self) {
+
+    }
 }

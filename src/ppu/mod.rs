@@ -19,6 +19,8 @@ pub struct Ppu {
     pub registers: PpuRegisters,
     pub framebuffer: Framebuffer,
     frame_complete: bool,
+    mode: PpuMode,
+    stat_irq_line: bool,
 }
 
 impl Ppu {
@@ -32,40 +34,94 @@ impl Ppu {
                 pixels: [0; 160 * 144],
             },
             frame_complete: false,
+            mode: PpuMode::OamSearch,
+            stat_irq_line: false,
         }
     }
 
     pub fn tick(&mut self, cycles: u32, vram: &[u8], oam: &[u8]) {
-        self.frame_complete = false;
-
-        for _ in 0..cycles {}
-
-        // Debug
-        self.line_dots += cycles as u16;
-        if self.line_dots > 4000 {
-            self.render_frame(vram);
-            self.line_dots = 0;
+        for _ in 0..cycles {
+            self.tick_dot(vram, oam);
         }
     }
 
-    pub fn render_frame(&mut self, vram: &[u8]) {
-        // BG disabled → clear screen
-        if self.registers.lcdc & 0x01 == 0 {
-            self.framebuffer.pixels.fill(0);
-            return;
-        }
+    fn tick_dot(&mut self, vram: &[u8], oam: &[u8]) {
+        self.frame_complete = false;
 
-        for y in 0..144 {
-            for x in 0..160 {
-                let color = self.bg_pixel(x as u8, y as u8, vram);
-                self.framebuffer.pixels[y * 160 + x] = color;
+        // resetting
+        if self.registers.lcdc & 0x80 == 0 {
+            self.mode = PpuMode::HBlank;
+            self.ly = 0;
+        } else {
+            if self.ly == 0 {
+
             }
         }
 
-        self.frame_complete = true;
+        self.line_dots = self.line_dots.wrapping_add(1);
+
+        match self.mode {
+            PpuMode::OamSearch => {
+                if self.line_dots == 80 {
+                    self.mode = PpuMode::PixelTransfer;
+                    self.px_x = 0;
+                }
+            }
+
+            PpuMode::PixelTransfer => {
+                // THIS is where pixels are produced
+                self.render_pixel(vram);
+
+                if self.px_x == 160 {
+                    self.mode = PpuMode::HBlank;
+                }
+            }
+
+            PpuMode::HBlank => {
+                if self.line_dots == 456 {
+                    self.end_scanline();
+                }
+            }
+
+            PpuMode::VBlank => {
+                if self.line_dots == 456 {
+                    self.end_scanline();
+                }
+            }
+        }
+    }
+
+    fn end_scanline(&mut self) {
+        self.line_dots = 0;
+
+        self.ly = self.ly.wrapping_add(1);
+
+        if self.ly == 144 {
+            self.mode = PpuMode::VBlank;
+            self.frame_complete = true; // ONE frame completed here
+        } else if self.ly > 153 {
+            self.ly = 0;
+            self.mode = PpuMode::OamSearch;
+        } else {
+            self.mode = PpuMode::OamSearch;
+        }
+    }
+
+    pub fn render_pixel(&mut self, vram: &[u8]) {
+        let x = self.px_x as usize;
+        let y = self.ly as usize;
+        if x < 160 && y < 144 {
+        let color = self.bg_pixel(self.px_x, self.ly, vram);
+            self.framebuffer.pixels[y * 160 + x] = color;
+        }
+
+        self.px_x = self.px_x.wrapping_add(1);
     }
 
     fn bg_pixel(&self, x: u8, y: u8, vram: &[u8]) -> u8 {
+        if self.registers.lcdc & 0x01 == 0 {
+            return 0;
+        }
         // Tile coordinates
         let sx = x.wrapping_add(self.registers.scx);
         let sy = y.wrapping_add(self.registers.scy);
@@ -124,7 +180,6 @@ impl Ppu {
 
     pub fn write_reg(&mut self, addr: u16, value: u8) {
         match addr {
-            // on/off
             0xFF40 => {
                 self.registers.lcdc = value;
             }
@@ -141,9 +196,5 @@ impl Ppu {
 
             _ => {}
         }
-    }
-
-    fn set_mode(&mut self, mode: PpuMode) {
-        self.registers.stat = (self.registers.stat & !0x03) | (mode as u8);
     }
 }

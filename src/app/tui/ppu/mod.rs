@@ -22,15 +22,6 @@ fn gb_color(pix: u8) -> Color {
     }
 }
 
-fn pixel_symbol(top: u8, bottom: u8) -> &'static str {
-    match (top != 0, bottom != 0) {
-        (false, false) => " ",
-        (true, false) => "▀",
-        (false, true) => "▄",
-        (true, true) => "█",
-    }
-}
-
 impl View for PpuView {
     fn draw(&mut self, terminal: &mut Terminal<CrosstermBackend<Stdout>>, emulator: &Emulator) {
         terminal
